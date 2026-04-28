@@ -2,6 +2,7 @@
 export class SoundManager {
   private static context: AudioContext | null = null;
   private static enabled: boolean = true;
+  private static music: HTMLAudioElement | null = null;
 
   private static getContext() {
     if (!this.context) {
@@ -12,6 +13,21 @@ export class SoundManager {
 
   static setEnabled(enabled: boolean) {
     this.enabled = enabled;
+  }
+
+  static playMusic() {
+    if (!this.music) {
+      this.music = new Audio('/music.mp3');
+      this.music.loop = true;
+      this.music.volume = 0.4;
+    }
+    this.music.play().catch(e => console.log("Autoplay prevented or file missing", e));
+  }
+
+  static stopMusic() {
+    if (this.music) {
+      this.music.pause();
+    }
   }
 
   static playPlace() {

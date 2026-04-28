@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { ZelligeBackground } from './components/ZelligeBackground';
 import { Menu } from './components/Menu';
@@ -36,28 +36,17 @@ export default function App() {
     SoundManager.setEnabled(newState);
   };
 
+  useEffect(() => {
+    if (musicEnabled) {
+      SoundManager.playMusic();
+    } else {
+      SoundManager.stopMusic();
+    }
+  }, [musicEnabled]);
+
   return (
     <div className="relative min-h-screen font-sans selection:bg-amber-200">
       <ZelligeBackground />
-
-      {/* Background Music - Local MP3 Player */}
-      {musicEnabled && (
-        <audio 
-          src="/music.mp3" 
-          autoPlay 
-          loop 
-          className="hidden"
-          ref={(audio) => {
-            if (audio) {
-              audio.volume = 0.4;
-              // Browsers often block autoplay, so we try to play it
-              audio.play().catch(() => {
-                console.log("Autoplay blocked, user interaction required");
-              });
-            }
-          }}
-        />
-      )}
       
       <AnimatePresence mode="wait">
         {view === 'menu' ? (
