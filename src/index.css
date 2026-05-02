@@ -1,29 +1,77 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,700&family=Noto+Sans+Arabic:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Amiri:wght@400;700&family=Tajawal:wght@400;700&display=swap');
 
 @theme {
-  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Playfair Display", ui-serif, Georgia, serif;
-  --font-arabic: "Noto Sans Arabic", "Outfit", sans-serif;
+  --font-sans: "Tajawal", "Cairo", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Amiri", ui-serif, Georgia, serif;
+  
+  --color-tunisian-red: #C0392B;
+  --color-tunisian-blue: #1A5276;
+  --color-tunisian-sandy: #F5E6C8;
+  --color-tunisian-gold: #D4AC0D;
+  --color-tunisian-olive: #5D6D2E;
+  --color-tunisian-white: #FAF0DC;
+  --color-tunisian-dark-blue: #154360;
+
+  --animate-spin-slow: spin 15s linear infinite;
 }
 
 body {
-  @apply bg-[#fdfaf5] text-[#4A2C2A] antialiased touch-none overflow-hidden;
+  @apply bg-[#E5D5B8] text-[#154360] antialiased touch-none overflow-hidden select-none;
   font-family: var(--font-sans);
 }
 
-h1, h2, h3, .font-serif {
+.zellige-pattern {
+  background-color: #F5E6C8;
+  background-image: 
+    linear-gradient(45deg, #1A5276 25%, transparent 25%, transparent 75%, #1A5276 75%, #1A5276),
+    linear-gradient(45deg, #1A5276 25%, transparent 25%, transparent 75%, #1A5276 75%, #1A5276);
+  background-size: 60px 60px;
+  background-position: 0 0, 30px 30px;
+  opacity: 0.05;
+}
+
+.tunisian-tile {
+  @apply relative rounded-lg transition-all duration-300;
+  background: linear-gradient(145deg, #FAF0DC, #F5E6C8);
+  box-shadow: inset 1px 1px 2px rgba(255,255,255,0.8), inset -1px -1px 2px rgba(0,0,0,0.1);
+}
+
+.tunisian-tile::after {
+  content: '';
+  @apply absolute inset-0 rounded-lg border border-black/5 pointer-events-none;
+}
+
+@keyframes pulse-gold {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 172, 13, 0.7); }
+  50% { box-shadow: 0 0 0 10px rgba(212, 172, 13, 0); }
+}
+
+.awsh-glow {
+  animation: pulse-gold 1.5s infinite;
+}
+
+@keyframes ghor-burst {
+  0% { transform: scale(0.5); opacity: 0; filter: blur(10px); }
+  50% { transform: scale(1.2); opacity: 1; filter: blur(0); }
+  100% { transform: scale(2); opacity: 0; filter: blur(20px); }
+}
+
+.ghor-burst {
+  position: absolute;
+  pointer-events: none;
+}
+
+.center-square {
+  background: linear-gradient(145deg, #D4AC0D, #B7950B) !important;
+  box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2) !important;
+}
+
+[dir="rtl"] {
+  font-family: var(--font-sans);
+}
+
+.font-serif {
   font-family: var(--font-serif);
-}
-
-[dir="rtl"], .font-arabic {
-  font-family: var(--font-arabic);
-}
-
-/* Prevent zoom on mobile inputs */
-@media screen and (max-width: 768px) {
-  input, select, textarea {
-    font-size: 16px !important;
-  }
 }
 

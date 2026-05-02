@@ -1,17 +1,13 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Language, Difficulty, BoardSize, TRANSLATIONS } from '../types';
-import { Settings as SettingsIcon, Play, Users, Trophy, BookOpen, Globe, BrainCircuit, Volume2, Music as MusicIcon } from 'lucide-react';
+import { Language, TRANSLATIONS } from '../types';
+import { Globe, Volume2, Music as MusicIcon, Info, X } from 'lucide-react';
 
 interface MenuProps {
-  onStartGame: (isVsAI: boolean) => void;
   language: Language;
   onLanguageChange: (lang: Language) => void;
-  difficulty: Difficulty;
-  onDifficultyChange: (diff: Difficulty) => void;
-  boardSize: BoardSize;
-  onBoardSizeChange: (size: BoardSize) => void;
+  onStart: () => void;
   soundEnabled: boolean;
   onSoundToggle: () => void;
   musicEnabled: boolean;
@@ -19,220 +15,153 @@ interface MenuProps {
 }
 
 export const Menu: React.FC<MenuProps> = ({ 
-  onStartGame, language, onLanguageChange, difficulty, onDifficultyChange,
-  boardSize, onBoardSizeChange, soundEnabled, onSoundToggle, musicEnabled, onMusicToggle
+  language, onLanguageChange, onStart, 
+  soundEnabled, onSoundToggle, musicEnabled, onMusicToggle 
 }) => {
   const t = TRANSLATIONS[language];
   const [showRules, setShowRules] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen text-[#4A2C2A] p-6 font-sans">
+    <div className="flex flex-col items-center justify-center min-h-screen w-full px-6 overflow-y-auto">
+      {/* Decorative Title Area */}
       <motion.div 
-        initial={{ scale: 0.9, opacity: 0 }}
+        initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="text-center mb-12"
+        className="relative mb-16 flex flex-col items-center"
       >
-        <div className="flex justify-center mb-4">
-          {/* Logo Placeholder - Hexagonal Geometric Shape */}
-          <div className="relative w-24 h-24 flex items-center justify-center">
-            <div className="absolute inset-0 bg-[#d97706] rotate-45 rounded-xl opacity-20 animate-pulse" />
-            <div className="absolute inset-2 bg-[#d97706] rounded-lg shadow-lg flex items-center justify-center">
-              <span className="text-4xl font-serif text-white">خ</span>
-            </div>
-          </div>
+        <div className="absolute -inset-20 zellige-pattern rounded-full opacity-10 animate-spin-slow pointer-events-none" />
+        
+        <h1 className="text-8xl md:text-9xl font-serif font-black text-tunisian-red drop-shadow-2xl mb-4 relative z-10 transition-all">
+          {t.title}
+        </h1>
+        <div className="p-2 px-8 bg-tunisian-gold rounded-full shadow-lg relative z-10">
+          <span className="text-xl font-bold text-tunisian-dark-blue tracking-widest uppercase">
+            Tunisian Strategy
+          </span>
         </div>
-        <h1 className="text-5xl font-serif font-black tracking-tight mb-2 uppercase">{t.title}</h1>
-        <p className={`text-lg font-medium opacity-70 ${language === 'ar' ? 'font-serif' : ''}`}>
-          {language === 'en' ? "Ancient Tunisian Strategy" : (language === 'fr' ? "Stratégie Tunisienne Ancestrale" : "لعبة استراتيجية تونسية قديمة")}
-        </p>
       </motion.div>
 
-      <div className="flex flex-col gap-4 w-full max-w-xs">
-        <MenuButton 
-          icon={<Play fill="currentColor" />} 
-          label={t.playVsAI} 
-          onClick={() => onStartGame(true)} 
-          primary 
-        />
-        <MenuButton 
-          icon={<Users />} 
-          label={t.playVsFriend} 
-          onClick={() => onStartGame(false)} 
-        />
-        <div className="grid grid-cols-2 gap-4">
-          <MenuButton 
-            small 
-            icon={<BookOpen />} 
-            label={t.howToPlay} 
-            onClick={() => setShowRules(true)} 
-          />
-          <MenuButton 
-            small 
-            icon={<SettingsIcon />} 
-            label={t.settings} 
-            onClick={() => setShowSettings(true)} 
-          />
-        </div>
-      </div>
+      <div className="max-w-md w-full flex flex-col gap-8">
+        {/* Play Button */}
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={onStart}
+          className="w-full py-6 rounded-3xl bg-tunisian-blue text-white text-3xl font-bold shadow-2xl hover:bg-tunisian-dark-blue transition-all border-b-8 border-black/20"
+        >
+          {t.start}
+        </motion.button>
 
-      <div className="mt-12 opacity-50 text-sm font-medium">
-        Made for the fans of Kharbga & Seega
+        {/* Rules Button - Now more obvious */}
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setShowRules(true)}
+          className="w-full py-4 rounded-2xl bg-tunisian-gold text-tunisian-dark-blue text-xl font-bold shadow-lg hover:brightness-110 transition-all border-b-4 border-black/10 flex items-center justify-center gap-3"
+        >
+          <Info size={24} /> {t.rules}
+        </motion.button>
+
+        {/* Quick Settings Grid */}
+        <div className="grid grid-cols-2 gap-4">
+          {/* Language Toggle */}
+          <div className="bg-white/80 backdrop-blur-sm p-4 rounded-2xl border-2 border-tunisian-gold flex flex-col items-center gap-2">
+            <label className="text-xs font-bold text-tunisian-dark-blue opacity-60 uppercase flex items-center gap-1">
+              <Globe size={14} /> {language === 'ar' ? "اللغة" : "Language"}
+            </label>
+            <div className="flex gap-2 w-full">
+              {(['ar', 'en', 'fr'] as Language[]).map(lang => (
+                <button
+                  key={lang}
+                  onClick={() => onLanguageChange(lang)}
+                  className={`flex-1 py-1 rounded-lg text-sm font-bold transition-all ${language === lang ? 'bg-tunisian-gold text-white shadow-md' : 'hover:bg-tunisian-sandy text-tunisian-dark-blue/60'}`}
+                >
+                  {lang.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Sound & Music */}
+          <div className="bg-white/80 backdrop-blur-sm p-4 rounded-2xl border-2 border-tunisian-gold flex flex-col items-center justify-center gap-3">
+             <div className="flex w-full gap-2">
+                <button 
+                  onClick={onSoundToggle}
+                  className={`flex-1 p-2 rounded-xl border transition-all ${soundEnabled ? 'bg-tunisian-gold text-white border-tunisian-gold' : 'bg-transparent text-tunisian-dark-blue/40 border-tunisian-dark-blue/20'}`}
+                >
+                  <Volume2 size={20} className="mx-auto" />
+                </button>
+                <button 
+                  onClick={onMusicToggle}
+                  className={`flex-1 p-2 rounded-xl border transition-all ${musicEnabled ? 'bg-tunisian-gold text-white border-tunisian-gold' : 'bg-transparent text-tunisian-dark-blue/40 border-tunisian-dark-blue/20'}`}
+                >
+                  <MusicIcon size={20} className="mx-auto" />
+                </button>
+             </div>
+             <span className="text-[10px] font-bold text-tunisian-dark-blue opacity-60 uppercase">Audio Controls</span>
+          </div>
+        </div>
+
       </div>
 
       {/* Rules Modal */}
       <AnimatePresence>
         {showRules && (
-          <Modal title={t.rules} onClose={() => setShowRules(false)}>
-            <div className={`space-y-4 ${language === 'ar' ? 'text-right' : ''}`}>
-              {t.rulesContent.map((rule, i) => (
-                <div key={i} className="flex gap-3 items-start">
-                  <div className="mt-1.5 w-2 h-2 rounded-full bg-[#d97706] shrink-0" />
-                  <p className="text-[#4A2C2A]/80 font-medium">{rule}</p>
-                </div>
-              ))}
-            </div>
-          </Modal>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowRules(false)}
+              className="absolute inset-0 bg-tunisian-dark-blue/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="relative bg-tunisian-white w-full max-w-lg rounded-[2.5rem] border-8 border-tunisian-gold shadow-2xl p-10 overflow-hidden"
+            >
+              <div className="absolute top-4 right-4 rtl:left-4 rtl:right-auto">
+                <button 
+                  onClick={() => setShowRules(false)}
+                  className="p-2 rounded-full hover:bg-tunisian-gold/10 text-tunisian-dark-blue transition-all"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <h2 className="text-4xl font-serif font-black text-tunisian-red mb-8 border-b-4 border-tunisian-gold/20 pb-4 inline-block">
+                {t.rules}
+              </h2>
+
+              <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-4 custom-scrollbar">
+                {t.rulesContent.map((rule, idx) => (
+                  <div key={idx} className="flex gap-4 items-start">
+                    <div className="w-8 h-8 rounded-xl bg-tunisian-gold flex items-center justify-center text-white font-black shrink-0">
+                      {idx + 1}
+                    </div>
+                    <p className="text-lg text-tunisian-dark-blue font-medium leading-relaxed">
+                      {rule}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <button 
+                onClick={() => setShowRules(false)}
+                className="mt-10 w-full py-4 rounded-2xl bg-tunisian-dark-blue text-white font-bold tracking-widest uppercase hover:bg-tunisian-blue transition-all shadow-xl"
+              >
+                {language === 'ar' ? "فهمت" : (language === 'fr' ? "Compris" : "Understood")}
+              </button>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
-      {/* Settings Modal */}
-      <AnimatePresence>
-        {showSettings && (
-          <Modal title={t.settings} onClose={() => setShowSettings(false)}>
-            <div className="space-y-6">
-              <div>
-                <label className="flex items-center gap-2 mb-3 font-bold text-[#4A2C2A]">
-                  <Globe size={18} /> {t.lang}
-                </label>
-                <div className="flex gap-2">
-                  {(['en', 'fr', 'ar'] as Language[]).map(l => (
-                    <button 
-                      key={l}
-                      onClick={() => onLanguageChange(l)}
-                      className={`flex-1 py-3 rounded-xl border-2 transition-all font-bold ${language === l ? 'border-[#d97706] bg-[#d97706]/10 text-[#d97706]' : 'border-[#e6d5b8] bg-white text-[#4A2C2A]/60'}`}
-                    >
-                      {l.toUpperCase()}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label className="flex items-center gap-2 mb-3 font-bold text-[#4A2C2A]">
-                  <Trophy size={18} /> {t.boardSize}
-                </label>
-                <div className="flex gap-2">
-                  {([5, 7] as BoardSize[]).map(s => (
-                    <button 
-                      key={s}
-                      onClick={() => onBoardSizeChange(s)}
-                      className={`flex-1 py-3 rounded-xl border-2 transition-all font-bold ${boardSize === s ? 'border-[#d97706] bg-[#d97706]/10 text-[#d97706]' : 'border-[#e6d5b8] bg-white text-[#4A2C2A]/60'}`}
-                    >
-                      {s}x{s}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4 pt-2">
-                <div>
-                    <label className="flex items-center gap-2 mb-3 font-bold text-[#4A2C2A]">
-                    <Volume2 size={18} /> {t.sound}
-                    </label>
-                    <button 
-                    onClick={onSoundToggle}
-                    className={`w-full py-3 rounded-xl border-2 transition-all font-bold ${soundEnabled ? 'border-green-600 bg-green-50 text-green-700' : 'border-gray-300 bg-gray-50 text-gray-400'}`}
-                    >
-                    {soundEnabled ? "ON" : "OFF"}
-                    </button>
-                </div>
-                <div>
-                    <label className="flex items-center gap-2 mb-3 font-bold text-[#4A2C2A]">
-                    <MusicIcon size={18} /> {t.music}
-                    </label>
-                    <button 
-                    onClick={onMusicToggle}
-                    className={`w-full py-3 rounded-xl border-2 transition-all font-bold ${musicEnabled ? 'border-green-600 bg-green-50 text-green-700' : 'border-gray-300 bg-gray-50 text-gray-400'}`}
-                    >
-                    {musicEnabled ? "ON" : "OFF"}
-                    </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="flex items-center gap-2 mb-3 font-bold text-[#4A2C2A]">
-                  <BrainCircuit size={18} /> {t.difficulty}
-                </label>
-                <div className="flex gap-2">
-                  {(['easy', 'hard'] as Difficulty[]).map(d => (
-                    <button 
-                      key={d}
-                      onClick={() => onDifficultyChange(d)}
-                      className={`flex-1 py-3 rounded-xl border-2 transition-all font-bold ${difficulty === d ? 'border-[#1e40af] bg-[#1e40af]/10 text-[#1e40af]' : 'border-[#e6d5b8] bg-white text-[#4A2C2A]/60'}`}
-                    >
-                      {t[d]}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </Modal>
-        )}
-      </AnimatePresence>
+      {/* Decorative footer elements */}
+      <div className="mt-16 opacity-20 text-tunisian-dark-blue font-serif tracking-widest text-sm pointer-events-none">
+        SIDI BOU SAID • MEDINA • CARTHAGE
+      </div>
     </div>
   );
 };
-
-interface MenuButtonProps {
-  icon: React.ReactNode;
-  label: string;
-  onClick: () => void;
-  primary?: boolean;
-  small?: boolean;
-}
-
-const MenuButton: React.FC<MenuButtonProps> = ({ icon, label, onClick, primary, small }) => (
-  <button 
-    onClick={onClick}
-    className={`
-      flex items-center gap-3 justify-center rounded-2xl transition-all active:scale-95
-      ${small ? 'py-4 flex-col text-xs' : 'py-5 text-base font-bold'}
-      ${primary 
-        ? 'bg-[#d97706] text-white shadow-lg shadow-amber-700/20' 
-        : 'bg-white border-2 border-[#e6d5b8] text-[#4A2C2A] shadow-sm'
-      }
-    `}
-  >
-    <span className={small ? 'text-amber-600' : ''}>{icon}</span>
-    {label}
-  </button>
-);
-
-const Modal: React.FC<{ title: string; children: React.ReactNode; onClose: () => void }> = ({ title, children, onClose }) => (
-  <motion.div 
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6"
-    onClick={onClose}
-  >
-    <motion.div 
-      initial={{ y: 50, scale: 0.9 }}
-      animate={{ y: 0, scale: 1 }}
-      exit={{ y: 50, scale: 0.9 }}
-      className="bg-[#fdfaf5] w-full max-w-sm rounded-[2.5rem] p-8 relative shadow-2xl border-2 border-[#d97706] bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]"
-      onClick={e => e.stopPropagation()}
-    >
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-serif font-black uppercase text-[#4A2C2A]">{title}</h2>
-      </div>
-      {children}
-      <button 
-        onClick={onClose}
-        className="mt-8 w-full py-4 bg-[#4A2C2A] text-white rounded-2xl font-bold uppercase tracking-wider shadow-lg shadow-black/20"
-      >
-        Close
-      </button>
-    </motion.div>
-  </motion.div>
-);

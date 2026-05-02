@@ -28,22 +28,54 @@ export const checkCaptures = (board: (Player | null)[], lastMoveIndex: number, c
   ];
 
   directions.forEach(({ dr, dc }) => {
-    const r1 = row + dr;
-    const c1 = col + dc;
-    const r2 = row + 2 * dr;
-    const c2 = col + 2 * dc;
-
-    if (r2 >= 0 && r2 < size && c2 >= 0 && c2 < size) {
-      const idx1 = r1 * size + c1;
-      const idx2 = r2 * size + c2;
-
-      if (board[idx1] === opponent && board[idx2] === currentPlayer) {
-        captured.push(idx1);
+    // Check for Ghor (3 captures) - Al-Khamoussiya specific but can be generalized
+    // We check if there are 1, 2, or 3 opponent pieces followed by a friendly piece
+    let potentialCaptures: number[] = [];
+    for (let i = 1; i <= 3; i++) {
+      const r = row + i * dr;
+      const c = col + i * dc;
+      if (r < 0 || r >= size || c < 0 || c >= size) break;
+      
+      const idx = r * size + c;
+      if (board[idx] === opponent) {
+        potentialCaptures.push(idx);
+      } else if (board[idx] === currentPlayer) {
+        // Found a flanking piece!
+        captured.push(...potentialCaptures);
+        break;
+      } else {
+        // Empty space or end of board
+        break;
       }
     }
   });
 
   return captured;
+};
+
+/**
+ * Checks which pieces of a specific player are in danger of being captured
+ * by any legal move of the opponent.
+ */
+export const getAwshPieces = (board: (Player | null)[], targetPlayer: Player, size: BoardSize): number[] => {
+  const inDanger: Set<number> = new Set();
+  const opponent = targetPlayer === 1 ? 2 : 1;
+  
+  // For each legal move the opponent can make...
+  const opponentMoves = getValidMoves(board, opponent, size);
+  
+  opponentMoves.forEach(move => {
+    // Simulate the move
+    const tempBoard = [...board];
+    tempBoard[move.to] = opponent;
+    tempBoard[move.from] = null;
+    
+    // Check if this move captures any targetPlayer pieces
+    const captured = checkCaptures(tempBoard, move.to, opponent, size);
+    captured.forEach(idx => inDanger.add(idx));
+  });
+  
+  return Array.from(inDanger);
 };
 
 export const getValidMoves = (board: (Player | null)[], player: Player, size: BoardSize): { from: number; to: number }[] => {
