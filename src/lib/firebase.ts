@@ -72,8 +72,14 @@ export const loginWithGoogle = async (): Promise<User> => {
   try {
     const result = await signInWithPopup(auth, provider);
     return result.user;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Login Error:", error);
+    if (error.code === 'auth/unauthorized-domain') {
+      throw new Error("This domain is NOT authorized in Firebase. Please add it to 'Authorized domains' in your Firebase console.");
+    }
+    if (error.code === 'auth/popup-blocked') {
+      throw new Error("Popup blocked! Please allow popups for this site or try again.");
+    }
     throw error;
   }
 };

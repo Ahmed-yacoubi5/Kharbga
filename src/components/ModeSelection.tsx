@@ -39,7 +39,7 @@ export const ModeSelection: React.FC<ModeSelectionProps> = ({ language, onSelect
   ];
 
   return (
-    <div className="max-w-4xl w-full px-6 py-12 flex flex-col items-center">
+    <div className="max-w-4xl w-full px-6 py-12 md:py-24 flex flex-col items-center min-h-screen overflow-y-auto">
       <div className="flex items-center justify-between w-full mb-12">
         <button 
           onClick={onBack}

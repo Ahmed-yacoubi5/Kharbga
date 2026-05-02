@@ -47,7 +47,7 @@ export default function App() {
 
   return (
     <div 
-      className="relative min-h-screen font-sans selection:bg-tunisian-gold selection:text-tunisian-dark-blue overflow-hidden" 
+      className="relative min-h-screen font-sans selection:bg-tunisian-gold selection:text-tunisian-dark-blue" 
       dir={language === 'ar' ? 'rtl' : 'ltr'}
     >
       <ZelligeBackground />

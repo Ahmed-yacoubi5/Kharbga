@@ -174,7 +174,7 @@ export const GameView: React.FC<GameViewProps> = ({ difficulty, language, onBack
   }, [currentPlayer, phase, winner, isVsAI, difficulty, size, placementCount]);
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row items-center justify-center p-4 md:p-8 bg-[#E5D5B8]/30">
+    <div className="min-h-screen flex flex-col md:flex-row items-center justify-center p-4 md:p-8 bg-[#E5D5B8]/30 overflow-y-auto pt-12 pb-24">
       
       {/* Sidebar - Stats */}
       <div className="w-full md:w-80 h-full flex flex-col gap-6 order-2 md:order-1 mt-8 md:mt-0 md:mr-8">

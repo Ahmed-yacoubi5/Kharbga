@@ -22,7 +22,7 @@ export const Menu: React.FC<MenuProps> = ({
   const [showRules, setShowRules] = useState(false);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen w-full px-6 overflow-y-auto">
+    <div className="flex flex-col items-center justify-center min-h-screen w-full px-6 py-12 md:py-20 overflow-y-auto">
       {/* Decorative Title Area */}
       <motion.div 
         initial={{ scale: 0.8, opacity: 0 }}

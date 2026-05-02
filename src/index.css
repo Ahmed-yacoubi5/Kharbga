@@ -17,8 +17,10 @@
 }
 
 body {
-  @apply bg-[#E5D5B8] text-[#154360] antialiased touch-none overflow-hidden select-none;
+  @apply bg-[#E5D5B8] text-[#154360] antialiased select-none;
   font-family: var(--font-sans);
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .zellige-pattern {

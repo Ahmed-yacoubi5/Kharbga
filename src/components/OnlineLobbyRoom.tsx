@@ -90,7 +90,7 @@ export const OnlineLobbyRoom: React.FC<OnlineLobbyRoomProps> = ({
   const players = Object.values(lobby.players || {}).filter((p): p is { name: string; isHost: boolean; lastSeen: number } => !!p);
 
   return (
-    <div className="max-w-2xl w-full px-6 py-12">
+    <div className="max-w-2xl w-full px-6 py-12 md:py-24 min-h-screen overflow-y-auto">
       <div className="flex items-center justify-between mb-12">
         <button onClick={handleLeave} className="p-3 rounded-full bg-white/50 hover:bg-white text-tunisian-dark-blue transition-all">
           <ArrowLeft size={24} />

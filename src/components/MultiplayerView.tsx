@@ -69,10 +69,14 @@ export const MultiplayerView: React.FC<MultiplayerViewProps> = ({
   }, [authenticated]);
 
   const handleLogin = async () => {
+    setError('');
+    setLoading(true);
     try {
       await loginWithGoogle();
-    } catch (err) {
-      setError("Login failed. Please try again.");
+    } catch (err: any) {
+      setError(err.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -150,7 +154,7 @@ export const MultiplayerView: React.FC<MultiplayerViewProps> = ({
   };
 
   return (
-    <div className="max-w-4xl w-full px-6 py-12">
+    <div className="max-w-4xl w-full px-6 py-12 md:py-24 min-h-screen overflow-y-auto">
       <div className="flex items-center justify-between mb-12">
         <button onClick={onBack} className="p-3 rounded-full bg-white/50 hover:bg-white text-tunisian-dark-blue transition-all">
           <ArrowLeft size={24} />
@@ -161,7 +165,7 @@ export const MultiplayerView: React.FC<MultiplayerViewProps> = ({
         <div className="w-12 h-12" />
       </div>
 
-      <div className="bg-white/90 backdrop-blur-md rounded-[3rem] border-8 border-tunisian-gold shadow-2xl p-8 overflow-hidden relative">
+      <div className="bg-white/90 backdrop-blur-md rounded-[3rem] border-8 border-tunisian-gold shadow-2xl p-8 relative">
         <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
           <Signal size={120} className="text-tunisian-blue" />
         </div>
@@ -176,11 +180,21 @@ export const MultiplayerView: React.FC<MultiplayerViewProps> = ({
                 <h2 className="text-3xl font-serif font-black text-tunisian-dark-blue mb-2">Auth Required</h2>
                 <p className="text-tunisian-dark-blue/60">Sign in with Google to enter the Global Arena</p>
               </div>
+
+              {error && (
+                <div className="flex items-center gap-2 p-4 bg-tunisian-red/10 text-tunisian-red rounded-xl font-bold max-w-sm mx-auto text-sm text-left">
+                  <AlertCircle size={20} className="shrink-0" />
+                  {error}
+                </div>
+              )}
+
               <button 
                 onClick={handleLogin}
-                className="px-12 py-5 rounded-2xl bg-tunisian-red text-white text-xl font-black shadow-xl hover:bg-tunisian-dark-blue transition-all flex items-center gap-4 mx-auto"
+                disabled={loading}
+                className="px-12 py-5 rounded-2xl bg-tunisian-red text-white text-xl font-black shadow-xl hover:bg-tunisian-dark-blue transition-all flex items-center gap-4 mx-auto disabled:opacity-50"
               >
-                <LogIn size={24} /> {language === 'ar' ? 'تسجيل الدخول' : (language === 'fr' ? 'Se connecter' : 'Sign in with Google')}
+                {loading ? <RefreshCw className="animate-spin" size={24} /> : <LogIn size={24} />} 
+                {language === 'ar' ? 'تسجيل الدخول' : (language === 'fr' ? 'Se connecter' : 'Sign in with Google')}
               </button>
             </div>
           ) : (
@@ -221,7 +235,7 @@ export const MultiplayerView: React.FC<MultiplayerViewProps> = ({
                   </button>
                 </div>
 
-                <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                <div className="space-y-4 max-h-[60vh] md:max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                   {loading ? (
                     <div className="flex flex-col items-center py-20 text-tunisian-dark-blue/40">
                       <RefreshCw size={48} className="animate-spin mb-4" />
