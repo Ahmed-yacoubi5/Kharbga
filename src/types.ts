@@ -6,6 +6,28 @@ export type Difficulty = 'easy' | 'hard';
 export type Language = 'en' | 'fr' | 'ar';
 export type GameMode = 'classic' | 'khamoussiya' | 'sabouiya';
 
+export interface LobbyData {
+  id: string;
+  name: string;
+  mode: GameMode;
+  status: 'waiting' | 'playing' | 'finished';
+  isPublic: boolean;
+  pin?: string;
+  hostId: string;
+  hostName: string;
+  playerCount: number;
+  players: Record<string, { name: string; isHost: boolean; lastSeen: number }>;
+  board: (Player | null)[];
+  currentPlayer: Player;
+  phase: GamePhase;
+  piecesLeftToPlace: Record<Player, number>;
+  moveCount: number;
+  winner: Player | null;
+  lastMoveAt?: string;
+  reconnectUntil?: string;
+  createdAt: string;
+}
+
 export interface GameState {
   board: (Player | null)[];
   currentPlayer: Player;
@@ -22,6 +44,23 @@ export const TRANSLATIONS = {
   en: {
     title: "KHARBGA",
     start: "Start Game",
+    playOnline: "Online Arena",
+    createLobby: "Open a Hall",
+    joinLobby: "Enter Hall",
+    lobbyName: "Hall Name",
+    nickname: "Your Nickname",
+    lobbies: "Active Halls",
+    noLobbies: "The Medina is quiet... create a hall!",
+    public: "Public",
+    private: "Private",
+    pin: "4-Digit PIN",
+    waitingForPlayer: "Waiting for a challenger...",
+    startGame: "Commence Battle",
+    reconnecting: "Seeking connection...",
+    opponentDisconnected: "Opponent lost in the Medina",
+    pinRequired: "PIN Required",
+    enterPin: "Enter the PIN code",
+    invalidPin: "Incorrect sequence",
     selectMode: "Select Mode",
     classicName: "Classic Sabou'iya",
     classicDesc: "Traditional 7x7 strategy",
@@ -58,6 +97,23 @@ export const TRANSLATIONS = {
   fr: {
     title: "KHARBGA",
     start: "Commencer",
+    playOnline: "Arène en Ligne",
+    createLobby: "Ouvrir un Salon",
+    joinLobby: "Rejoindre",
+    lobbyName: "Nom du Salon",
+    nickname: "Votre Pseudo",
+    lobbies: "Salons Actifs",
+    noLobbies: "La Médine est calme... ouvrez un salon !",
+    public: "Public",
+    private: "Privé",
+    pin: "Code PIN (4 chiffres)",
+    waitingForPlayer: "En attente d'un adversaire...",
+    startGame: "Commencer la Bataille",
+    reconnecting: "Recherche de connexion...",
+    opponentDisconnected: "L'adversaire s'est égaré",
+    pinRequired: "PIN Requis",
+    enterPin: "Entrez le code PIN",
+    invalidPin: "Code incorrect",
     selectMode: "Choisir le Mode",
     classicName: "Sabou'iya Classique",
     classicDesc: "Stratégie traditionnelle 7x7",
@@ -94,6 +150,23 @@ export const TRANSLATIONS = {
   ar: {
     title: "الخربقة",
     start: "ابدأ اللعبة",
+    playOnline: "الساحة العالمية",
+    createLobby: "فتح مجلس",
+    joinLobby: "دخول المجلس",
+    lobbyName: "اسم المجلس",
+    nickname: "لقبك",
+    lobbies: "المجالس النشطة",
+    noLobbies: "المدينة هادئة... افتح مجلساً!",
+    public: "عام",
+    private: "خاص",
+    pin: "رمز سري (4 أرقام)",
+    waitingForPlayer: "في انتظار المنافس...",
+    startGame: "بدأ المعركة",
+    reconnecting: "البحث عن اتصال...",
+    opponentDisconnected: "المنافس تاه في المدينة",
+    pinRequired: "الرمز مطلوب",
+    enterPin: "أدخل الرمز السري",
+    invalidPin: "الرمز غير صحيح",
     selectMode: "اختر النمط",
     classicName: "الخربقة الكلاسيكية",
     classicDesc: "استراتيجية تقليدية 7x7",

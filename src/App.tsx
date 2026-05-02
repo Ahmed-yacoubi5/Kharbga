@@ -14,11 +14,15 @@ import { ZelligeBackground } from './components/ZelligeBackground';
 import { Menu } from './components/Menu';
 import { GameView } from './components/GameView';
 import { ModeSelection } from './components/ModeSelection';
-import { Language, Difficulty, BoardSize, GameMode } from './types';
+import { Language, Difficulty, BoardSize, GameMode, LobbyData } from './types';
 import { SoundManager } from './services/soundService';
+import { MultiplayerView } from './components/MultiplayerView';
+import { OnlineLobbyRoom } from './components/OnlineLobbyRoom';
+import { OnlineGameView } from './components/OnlineGameView';
 
 export default function App() {
-  const [view, setView] = useState<'home' | 'modeSelection' | 'game'>('home');
+  const [view, setView] = useState<'home' | 'modeSelection' | 'multiplayer' | 'lobby' | 'game'>('home');
+  const [activeLobby, setActiveLobby] = useState<LobbyData | null>(null);
   const [isVsAI, setIsVsAI] = useState(true);
   const [language, setLanguage] = useState<Language>('ar');
   const [difficulty, setDifficulty] = useState<Difficulty>('hard');
@@ -85,7 +89,47 @@ export default function App() {
                 setIsVsAI(vsAI);
                 setView('game');
               }}
+              onOnlineSelect={() => setView('multiplayer')}
               onBack={() => setView('home')}
+            />
+          </motion.div>
+        )}
+
+        {view === 'multiplayer' && (
+          <motion.div
+            key="multiplayer"
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -100 }}
+            className="relative z-10 w-full h-full flex items-center justify-center min-h-screen"
+          >
+            <MultiplayerView 
+              language={language}
+              onJoinLobby={(lobby) => {
+                setActiveLobby(lobby);
+                setView('lobby');
+              }}
+              onBack={() => setView('modeSelection')}
+            />
+          </motion.div>
+        )}
+
+        {view === 'lobby' && (
+          <motion.div
+            key="lobby"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.1 }}
+            className="relative z-10 w-full h-full flex items-center justify-center min-h-screen"
+          >
+            <OnlineLobbyRoom 
+              language={language}
+              lobbyId={activeLobby?.id || ''}
+              onStartGame={() => setView('game')}
+              onBack={() => {
+                setActiveLobby(null);
+                setView('multiplayer');
+              }}
             />
           </motion.div>
         )}
@@ -98,14 +142,25 @@ export default function App() {
             exit={{ opacity: 0, y: 50 }}
             className="relative z-10 w-full h-full"
           >
-            <GameView 
-              difficulty={difficulty}
-              language={language}
-              isVsAI={isVsAI}
-              size={boardSize}
-              mode={gameMode}
-              onBack={() => setView('modeSelection')}
-            />
+            {activeLobby ? (
+               <OnlineGameView 
+                 lobby={activeLobby}
+                 language={language}
+                 onBack={() => {
+                    setActiveLobby(null);
+                    setView('multiplayer');
+                 }}
+               />
+            ) : (
+              <GameView 
+                difficulty={difficulty}
+                language={language}
+                isVsAI={isVsAI}
+                size={boardSize}
+                mode={gameMode}
+                onBack={() => setView('modeSelection')}
+              />
+            )}
           </motion.div>
         )}
       </AnimatePresence>

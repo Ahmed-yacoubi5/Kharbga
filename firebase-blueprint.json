@@ -1,0 +1,53 @@
+{
+  "entities": {
+    "Lobby": {
+      "title": "Game Lobby",
+      "description": "Represents an online game lobby and its active state",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "mode": { "type": "string", "enum": ["classic", "khamoussiya", "sabouiya"] },
+        "status": { "type": "string", "enum": ["waiting", "playing", "finished"] },
+        "isPublic": { "type": "boolean" },
+        "pin": { "type": "string" },
+        "hostId": { "type": "string" },
+        "hostName": { "type": "string" },
+        "players": {
+          "type": "object",
+          "description": "Map of UID to player info"
+        },
+        "playerCount": { "type": "integer" },
+        "board": { "type": "array" },
+        "currentPlayer": { "type": "integer" },
+        "phase": { "type": "string" },
+        "piecesLeftToPlace": { "type": "object" },
+        "moveCount": { "type": "integer" },
+        "winner": { "type": "integer" },
+        "lastMoveAt": { "type": "string", "format": "date-time" },
+        "reconnectUntil": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "mode", "status", "hostId", "hostName", "playerCount"]
+    },
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Public profile info for a user",
+      "type": "object",
+      "properties": {
+        "nickname": { "type": "string" },
+        "lastSeen": { "type": "string", "format": "date-time" }
+      },
+      "required": ["nickname"]
+    }
+  },
+  "firestore": {
+    "/lobbies/{lobbyId}": {
+      "schema": "Lobby",
+      "description": "Collection of game lobbies"
+    },
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile data"
+    }
+  }
+}

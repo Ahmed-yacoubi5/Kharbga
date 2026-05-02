@@ -2,15 +2,16 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Language, TRANSLATIONS, GameMode } from '../types';
-import { LayoutGrid, Grid3x3, ArrowLeft, Trophy } from 'lucide-react';
+import { LayoutGrid, Grid3x3, ArrowLeft, Trophy, Globe } from 'lucide-react';
 
 interface ModeSelectionProps {
   language: Language;
   onSelect: (mode: GameMode, vsAI: boolean) => void;
+  onOnlineSelect: () => void;
   onBack: () => void;
 }
 
-export const ModeSelection: React.FC<ModeSelectionProps> = ({ language, onSelect, onBack }) => {
+export const ModeSelection: React.FC<ModeSelectionProps> = ({ language, onSelect, onOnlineSelect, onBack }) => {
   const t = TRANSLATIONS[language];
 
   const modes: { id: GameMode; name: string; desc: string; icon: React.ReactNode; size: string }[] = [
@@ -51,6 +52,24 @@ export const ModeSelection: React.FC<ModeSelectionProps> = ({ language, onSelect
         </h1>
         <div className="w-12 h-12" /> {/* Spacer */}
       </div>
+
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={onOnlineSelect}
+        className="w-full mb-12 p-8 rounded-3xl bg-tunisian-gold text-tunisian-dark-blue flex items-center justify-between shadow-xl border-4 border-white/20 group"
+      >
+        <div className="flex items-center gap-6">
+          <div className="w-20 h-20 rounded-2xl bg-white/20 flex items-center justify-center group-hover:rotate-12 transition-transform">
+            <Globe size={48} />
+          </div>
+          <div className="text-left">
+            <h2 className="text-3xl font-serif font-black">{t.playOnline}</h2>
+            <p className="text-tunisian-dark-blue/60 font-bold">{language === 'ar' ? "واجه لاعبين من جميع أنحاء العالم" : "Face opponents from across the Medina"}</p>
+          </div>
+        </div>
+        <ArrowLeft size={32} className="rotate-180 opacity-40 group-hover:translate-x-2 transition-transform" />
+      </motion.button>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
         {modes.map((mode, idx) => (

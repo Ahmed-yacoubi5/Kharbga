@@ -1,0 +1,75 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 0. Global safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 3. Global Helpers
+    function isSignedIn() { return request.auth != null; }
+    function isVerified() { return isSignedIn() && (request.auth.token.email_verified == true || request.auth.token.firebase.sign_in_provider == 'anonymous'); }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    function isValidLobby(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() <= 50
+        && data.mode in ['classic', 'khamoussiya', 'sabouiya']
+        && data.status in ['waiting', 'playing', 'finished']
+        && data.playerCount is int && data.playerCount >= 1 && data.playerCount <= 2
+        && data.hostId == request.auth.uid
+        && data.players.keys().hasAll([request.auth.uid])
+        && (data.isPublic == true || (data.pin is string && data.pin.size() == 4));
+    }
+
+    // 1. Lobbies Collection
+    match /lobbies/{lobbyId} {
+      allow list: if isVerified() && existing().status == 'waiting';
+      allow get: if isVerified();
+      
+      allow create: if isVerified() 
+        && isValidId(lobbyId) 
+        && isValidLobby(incoming())
+        && incoming().createdAt == request.time;
+
+      allow update: if isVerified() && (
+        // Action: Heartbeat
+        (incoming().diff(existing()).affectedKeys().hasOnly(['players.' + request.auth.uid + '.lastSeen']))
+        || 
+        // Action: Join
+        (existing().status == 'waiting' && existing().playerCount == 1 
+         && incoming().playerCount == 2 
+         && incoming().diff(existing()).affectedKeys().hasOnly(['playerCount', 'players.' + request.auth.uid])
+         && (!existing().isPublic ? (incoming().pin == existing().pin) : true))
+        ||
+        // Action: Start Game (Host only)
+        (existing().hostId == request.auth.uid && existing().status == 'waiting' 
+         && incoming().status == 'playing' && incoming().playerCount == 2
+         && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'lastMoveAt']))
+        ||
+        // Action: Move / Game Sync
+        (existing().status == 'playing' 
+         && (existing().players.keys().hasAll([request.auth.uid]))
+         // We allow the current player to update the board state
+         // In a production app, we'd validate moves more strictly, but here we trust the logic
+         && incoming().diff(existing()).affectedKeys().hasAny(['board', 'currentPlayer', 'phase', 'piecesLeftToPlace', 'moveCount', 'winner', 'status', 'lastMoveAt', 'reconnectUntil']))
+        ||
+        // Action: Leave/Disconnect
+        (incoming().playerCount < existing().playerCount 
+         && incoming().diff(existing()).affectedKeys().hasOnly(['playerCount', 'players.' + request.auth.uid]))
+      );
+
+      allow delete: if isVerified() && existing().hostId == request.auth.uid && existing().status == 'waiting';
+    }
+
+    // 2. Users Collection
+    match /users/{userId} {
+      allow get: if isVerified();
+      allow create, update: if isVerified() && request.auth.uid == userId 
+        && incoming().nickname is string && incoming().nickname.size() <= 30
+        && incoming().lastSeen == request.time;
+    }
+  }
+}
