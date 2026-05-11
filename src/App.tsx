@@ -10,6 +10,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
+import { Analytics } from '@vercel/analytics/react';
 import { ZelligeBackground } from './components/ZelligeBackground';
 import { Menu } from './components/Menu';
 import { GameView } from './components/GameView';
@@ -51,6 +52,7 @@ export default function App() {
       dir={language === 'ar' ? 'rtl' : 'ltr'}
     >
       <ZelligeBackground />
+      <Analytics />
       
       <AnimatePresence mode="wait">
         {view === 'home' && (
