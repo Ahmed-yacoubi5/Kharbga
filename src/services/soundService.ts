@@ -3,6 +3,7 @@ export class SoundManager {
   private static context: AudioContext | null = null;
   private static enabled: boolean = true;
   private static music: HTMLAudioElement | null = null;
+  private static currentTrackId: string | null = null;
 
   private static getContext() {
     if (!this.context) {
@@ -15,12 +16,20 @@ export class SoundManager {
     this.enabled = enabled;
   }
 
-  static playMusic() {
-    if (!this.music) {
-      this.music = new Audio('/music.mp3');
-      this.music.loop = true;
-      this.music.volume = 0.4;
+  static playMusic(trackPath: string = '/music.mp3', trackId: string = 'default') {
+    if (this.music) {
+      if (this.currentTrackId === trackId) {
+        this.music.play().catch(e => console.log("Autoplay prevented", e));
+        return;
+      }
+      this.music.pause();
+      this.music = null;
     }
+
+    this.music = new Audio(trackPath);
+    this.music.loop = true;
+    this.music.volume = 0.4;
+    this.currentTrackId = trackId;
     this.music.play().catch(e => console.log("Autoplay prevented or file missing", e));
   }
 

@@ -18,6 +18,8 @@ import { Language, Difficulty, GameMode } from './types';
 import { SoundManager } from './services/soundService';
 import { RulesPage } from './components/RulesPage';
 
+import { MusicTrack, MUSIC_TRACKS } from './constants';
+
 export default function App() {
   const [view, setView] = useState<'home' | 'modeSelection' | 'game' | 'rules'>('home');
   const [rulesInitialVariant, setRulesInitialVariant] = useState<GameMode | undefined>();
@@ -27,14 +29,15 @@ export default function App() {
   const [gameMode, setGameMode] = useState<GameMode>('sabouiya_standard');
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [musicEnabled, setMusicEnabled] = useState(false);
+  const [currentTrack, setCurrentTrack] = useState<MusicTrack>(MUSIC_TRACKS[0]);
 
   useEffect(() => {
     if (musicEnabled) {
-      SoundManager.playMusic();
+      SoundManager.playMusic(currentTrack.path, currentTrack.id);
     } else {
       SoundManager.stopMusic();
     }
-  }, [musicEnabled]);
+  }, [musicEnabled, currentTrack]);
 
   const handleSoundToggle = () => {
     const newState = !soundEnabled;
@@ -67,6 +70,8 @@ export default function App() {
               onSoundToggle={handleSoundToggle}
               musicEnabled={musicEnabled}
               onMusicToggle={() => setMusicEnabled(!musicEnabled)}
+              currentTrackId={currentTrack.id}
+              onTrackSelect={setCurrentTrack}
             />
           </motion.div>
         )}

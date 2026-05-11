@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Language, TRANSLATIONS } from '../types';
 import { Globe, Volume2, Music as MusicIcon, Info, X } from 'lucide-react';
+import { MusicSelector } from './MusicSelector';
+import { MusicTrack } from '../constants';
 
 interface MenuProps {
   language: Language;
@@ -13,11 +15,14 @@ interface MenuProps {
   onSoundToggle: () => void;
   musicEnabled: boolean;
   onMusicToggle: () => void;
+  currentTrackId: string;
+  onTrackSelect: (track: MusicTrack) => void;
 }
 
 export const Menu: React.FC<MenuProps> = ({ 
   language, onLanguageChange, onStart, onRulesSelect,
-  soundEnabled, onSoundToggle, musicEnabled, onMusicToggle 
+  soundEnabled, onSoundToggle, musicEnabled, onMusicToggle,
+  currentTrackId, onTrackSelect
 }) => {
   const t = TRANSLATIONS[language];
 
@@ -101,6 +106,22 @@ export const Menu: React.FC<MenuProps> = ({
              <span className="text-[10px] font-bold text-tunisian-dark-blue opacity-60 uppercase">Audio Controls</span>
           </div>
         </div>
+
+        {/* Music selector - if music is enabled or just to show choice */}
+        {musicEnabled && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            className="overflow-hidden"
+          >
+            <MusicSelector 
+              language={language}
+              musicEnabled={musicEnabled}
+              currentTrackId={currentTrackId}
+              onTrackSelect={onTrackSelect}
+            />
+          </motion.div>
+        )}
 
       </div>
 
