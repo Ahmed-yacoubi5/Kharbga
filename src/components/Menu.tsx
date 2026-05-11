@@ -8,6 +8,7 @@ interface MenuProps {
   language: Language;
   onLanguageChange: (lang: Language) => void;
   onStart: () => void;
+  onRulesSelect: () => void;
   soundEnabled: boolean;
   onSoundToggle: () => void;
   musicEnabled: boolean;
@@ -15,11 +16,10 @@ interface MenuProps {
 }
 
 export const Menu: React.FC<MenuProps> = ({ 
-  language, onLanguageChange, onStart, 
+  language, onLanguageChange, onStart, onRulesSelect,
   soundEnabled, onSoundToggle, musicEnabled, onMusicToggle 
 }) => {
   const t = TRANSLATIONS[language];
-  const [showRules, setShowRules] = useState(false);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen w-full px-6 py-12 md:py-20 overflow-y-auto">
@@ -52,11 +52,11 @@ export const Menu: React.FC<MenuProps> = ({
           {t.start}
         </motion.button>
 
-        {/* Rules Button - Now more obvious */}
+        {/* Rules Button - Now navigates to Rules Page */}
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => setShowRules(true)}
+          onClick={onRulesSelect}
           className="w-full py-4 rounded-2xl bg-tunisian-gold text-tunisian-dark-blue text-xl font-bold shadow-lg hover:brightness-110 transition-all border-b-4 border-black/10 flex items-center justify-center gap-3"
         >
           <Info size={24} /> {t.rules}
@@ -103,60 +103,6 @@ export const Menu: React.FC<MenuProps> = ({
         </div>
 
       </div>
-
-      {/* Rules Modal */}
-      <AnimatePresence>
-        {showRules && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowRules(false)}
-              className="absolute inset-0 bg-tunisian-dark-blue/60 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative bg-tunisian-white w-full max-w-lg rounded-[2.5rem] border-8 border-tunisian-gold shadow-2xl p-10 overflow-hidden"
-            >
-              <div className="absolute top-4 right-4 rtl:left-4 rtl:right-auto">
-                <button 
-                  onClick={() => setShowRules(false)}
-                  className="p-2 rounded-full hover:bg-tunisian-gold/10 text-tunisian-dark-blue transition-all"
-                >
-                  <X size={24} />
-                </button>
-              </div>
-
-              <h2 className="text-4xl font-serif font-black text-tunisian-red mb-8 border-b-4 border-tunisian-gold/20 pb-4 inline-block">
-                {t.rules}
-              </h2>
-
-              <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-4 custom-scrollbar">
-                {t.rulesContent.map((rule, idx) => (
-                  <div key={idx} className="flex gap-4 items-start">
-                    <div className="w-8 h-8 rounded-xl bg-tunisian-gold flex items-center justify-center text-white font-black shrink-0">
-                      {idx + 1}
-                    </div>
-                    <p className="text-lg text-tunisian-dark-blue font-medium leading-relaxed">
-                      {rule}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              <button 
-                onClick={() => setShowRules(false)}
-                className="mt-10 w-full py-4 rounded-2xl bg-tunisian-dark-blue text-white font-bold tracking-widest uppercase hover:bg-tunisian-blue transition-all shadow-xl"
-              >
-                {language === 'ar' ? "فهمت" : (language === 'fr' ? "Compris" : "Understood")}
-              </button>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
 
       {/* Decorative footer elements */}
       <div className="mt-16 opacity-20 text-tunisian-dark-blue font-serif tracking-widest text-sm pointer-events-none">

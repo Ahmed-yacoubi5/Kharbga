@@ -5,7 +5,7 @@ import {
   deleteDoc, getDocs, getDoc, arrayUnion
 } from 'firebase/firestore';
 import { db, auth, ensureAuth, handleFirestoreError, OperationType, loginWithGoogle } from '../lib/firebase';
-import { Language, TRANSLATIONS, LobbyData, GameMode } from '../types';
+import { Language, TRANSLATIONS, LobbyData, GameMode, GAME_VARIANTS, GameVariantInfo } from '../types';
 import { 
   Plus, Users, Lock, Unlock, ArrowLeft, RefreshCw, 
   Play, Shield, User as UserIcon, Signal, AlertCircle, LogIn 
@@ -80,6 +80,8 @@ export const MultiplayerView: React.FC<MultiplayerViewProps> = ({
     }
   };
 
+  const variantList = Object.values(GAME_VARIANTS);
+
   const handleCreateLobby = async () => {
     if (!nickname.trim()) {
       setError(t.nicknameRequired || "Nickname required");
@@ -89,6 +91,9 @@ export const MultiplayerView: React.FC<MultiplayerViewProps> = ({
     
     try {
       const user = await ensureAuth();
+      const variant = GAME_VARIANTS[selectedMode];
+      const boardSize = selectedMode === 'tleisha' ? 7 : variant.size * variant.size;
+      
       const newLobby = {
         name: lobbyName || `${nickname}'s Hall`,
         mode: selectedMode,
@@ -101,10 +106,10 @@ export const MultiplayerView: React.FC<MultiplayerViewProps> = ({
         players: {
           [user.uid]: { name: nickname, isHost: true, lastSeen: Date.now() }
         },
-        board: Array(selectedMode === 'khamoussiya' ? 25 : 49).fill(null),
+        board: Array(boardSize).fill(null),
         currentPlayer: 1,
-        phase: 'placement',
-        piecesLeftToPlace: { 1: selectedMode === 'khamoussiya' ? 12 : 24, 2: selectedMode === 'khamoussiya' ? 12 : 24 },
+        phase: variant.id === 'sabouiya_guettar' ? 'movement' : 'placement',
+        piecesLeftToPlace: { 1: variant.pieces, 2: variant.pieces },
         moveCount: 0,
         winner: null,
         createdAt: serverTimestamp(),
@@ -308,15 +313,15 @@ export const MultiplayerView: React.FC<MultiplayerViewProps> = ({
                     </div>
 
                     <div>
-                      <label className="text-sm font-black text-tunisian-dark-blue/60 mb-2 block uppercase">Mode</label>
-                      <div className="grid grid-cols-2 gap-2">
-                        {(['classic', 'khamoussiya'] as GameMode[]).map(mode => (
+                      <label className="text-sm font-black text-tunisian-dark-blue/60 mb-2 block uppercase">{t.selectMode}</label>
+                      <div className="grid grid-cols-2 gap-2 overflow-y-auto max-h-48 p-1">
+                        {variantList.map((v: GameVariantInfo) => (
                           <button
-                            key={mode}
-                            onClick={() => setSelectedMode(mode)}
-                            className={`p-4 rounded-xl border-2 font-bold transition-all ${selectedMode === mode ? 'border-tunisian-blue bg-tunisian-blue/5 text-tunisian-blue' : 'border-tunisian-sandy bg-white text-tunisian-dark-blue/40'}`}
+                            key={v.id}
+                            onClick={() => setSelectedMode(v.id)}
+                            className={`p-3 rounded-xl border-2 font-bold transition-all text-xs ${selectedMode === v.id ? 'border-tunisian-blue bg-tunisian-blue/5 text-tunisian-blue' : 'border-tunisian-sandy bg-white text-tunisian-dark-blue/40'}`}
                           >
-                            {mode === 'khamoussiya' ? '5x5' : '7x7'}
+                            {t[v.nameKey as keyof typeof t] || v.nameKey}
                           </button>
                         ))}
                       </div>
