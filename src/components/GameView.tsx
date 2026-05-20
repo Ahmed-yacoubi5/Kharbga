@@ -9,8 +9,18 @@ import {
   getNeighbors, checkCapturesEncircle, getValidMoves, getAwshPieces, 
   checkWinAlignment, getJumpMoves, minimax
 } from '../logic/engine';
-import { Trophy, ArrowLeft, RefreshCw, Sparkles, AlertTriangle, BookOpen, HelpCircle, Users, Shield } from 'lucide-react';
+import { Trophy, ArrowLeft, RefreshCw, Sparkles, AlertTriangle, BookOpen, HelpCircle, Users, Shield, Undo2 } from 'lucide-react';
 import { SoundManager } from '../services/soundService';
+
+interface GameHistoryState {
+  board: (Player | null)[];
+  currentPlayer: Player;
+  phase: GamePhase;
+  piecesLeftToPlace: { 1: number; 2: number };
+  placementCount: number;
+  capturedCount: { 1: number; 2: number };
+  moveCount: number;
+}
 
 interface GameViewProps {
   difficulty: Difficulty;
@@ -46,6 +56,35 @@ export const GameView: React.FC<GameViewProps> = ({ difficulty, language, onBack
   const [moveCount, setMoveCount] = useState(0);
   const [showGhor, setShowGhor] = useState(false);
   const [isAiThinking, setIsAiThinking] = useState(false);
+  const [history, setHistory] = useState<GameHistoryState[]>([]);
+
+  const saveHistory = useCallback(() => {
+    const currentSnapshot: GameHistoryState = {
+      board: [...board],
+      currentPlayer,
+      phase,
+      piecesLeftToPlace: { ...piecesLeftToPlace },
+      placementCount,
+      capturedCount: { ...capturedCount },
+      moveCount
+    };
+    setHistory(prev => [...prev, currentSnapshot]);
+  }, [board, currentPlayer, phase, piecesLeftToPlace, placementCount, capturedCount, moveCount]);
+
+  const handleUndo = () => {
+    if (history.length === 0) return;
+    const lastState = history[history.length - 1];
+    setBoard(lastState.board);
+    setCurrentPlayer(lastState.currentPlayer);
+    setPhase(lastState.phase);
+    setPiecesLeftToPlace(lastState.piecesLeftToPlace);
+    setPlacementCount(lastState.placementCount);
+    setCapturedCount(lastState.capturedCount);
+    setMoveCount(lastState.moveCount);
+    setHistory(prev => prev.slice(0, -1));
+    setWinner(null);
+    setSelectedPiece(null);
+  };
 
   const awshPieces = useMemo(() => {
     if (phase !== 'movement' || variant.capture === 'none') return [];
@@ -155,6 +194,7 @@ export const GameView: React.FC<GameViewProps> = ({ difficulty, language, onBack
     // Almost all variants keep center relative empty during placement except Class I
     if (variant.capture !== 'none' && index === centerIndex) return;
 
+    saveHistory();
     const newBoard = [...board];
     newBoard[index] = currentPlayer;
     const newPiecesLeft = { ...piecesLeftToPlace, [currentPlayer]: piecesLeftToPlace[currentPlayer] - 1 };
@@ -194,6 +234,7 @@ export const GameView: React.FC<GameViewProps> = ({ difficulty, language, onBack
   };
 
   const movePiece = (from: number, to: number) => {
+    saveHistory();
     const newBoard = [...board];
     newBoard[to] = currentPlayer;
     newBoard[from] = null;
@@ -249,6 +290,7 @@ export const GameView: React.FC<GameViewProps> = ({ difficulty, language, onBack
     setWinner(null);
     setMoveCount(0);
     setCapturedCount({ 1: 0, 2: 0 });
+    setHistory([]);
   };
 
   return (
@@ -258,13 +300,31 @@ export const GameView: React.FC<GameViewProps> = ({ difficulty, language, onBack
       <div className="w-full md:w-80 h-full flex flex-col gap-6 order-2 md:order-1 mt-8 md:mt-0 md:mr-8">
         <div className="tunisian-tile p-6 border-2 border-tunisian-gold bg-white shadow-xl rounded-[2rem]">
           <div className="flex items-center justify-between mb-8">
-            <button onClick={onBack} className="p-3 rounded-2xl bg-tunisian-sandy text-tunisian-dark-blue hover:bg-white transition-all shadow-md">
-              <ArrowLeft size={20} />
-            </button>
-            <h2 className="font-serif font-black text-xl text-tunisian-red">{t[variant.nameKey as keyof typeof t]}</h2>
+            <div className="flex gap-2">
+              <button 
+                onClick={onBack} 
+                className="p-3 rounded-2xl bg-tunisian-sandy text-tunisian-dark-blue hover:bg-white transition-all shadow-md"
+                title={t.back}
+              >
+                <ArrowLeft size={20} />
+              </button>
+              {!isVsAI && history.length > 0 && (
+                <motion.button
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  onClick={handleUndo}
+                  className="p-3 rounded-2xl bg-tunisian-gold text-white hover:bg-tunisian-red transition-all shadow-md flex items-center justify-center"
+                  title={t.undo}
+                >
+                  <Undo2 size={20} />
+                </motion.button>
+              )}
+            </div>
+            <h2 className="font-serif font-black text-lg text-tunisian-red flex-1 text-center px-2">{t[variant.nameKey as keyof typeof t]}</h2>
             <button 
               onClick={() => onShowRules(mode)}
               className="p-3 rounded-2xl bg-tunisian-blue/10 text-tunisian-blue hover:bg-tunisian-blue hover:text-white transition-all"
+              title={t.rules}
             >
               <HelpCircle size={20} />
             </button>
