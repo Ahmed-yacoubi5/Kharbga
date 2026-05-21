@@ -4,7 +4,7 @@ import {
   Player, GamePhase, Difficulty, Language, GameMode,
   TRANSLATIONS, GAME_VARIANTS
 } from '../types';
-import { BoardCell, CircularBoard } from './BoardElements';
+import { BoardCell, CircularBoard, SeashellIcon, PlayerPieceIcon } from './BoardElements';
 import { 
   getNeighbors, checkCapturesEncircle, getValidMoves, getAwshPieces, 
   checkWinAlignment, getJumpMoves, minimax
@@ -29,9 +29,10 @@ interface GameViewProps {
   onShowRules: (mode: GameMode) => void;
   isVsAI: boolean;
   mode: GameMode;
+  pieceAppearance?: 'seashell' | 'default';
 }
 
-export const GameView: React.FC<GameViewProps> = ({ difficulty, language, onBack, onShowRules, isVsAI, mode }) => {
+export const GameView: React.FC<GameViewProps> = ({ difficulty, language, onBack, onShowRules, isVsAI, mode, pieceAppearance = 'seashell' }) => {
   const t = TRANSLATIONS[language];
   const variant = GAME_VARIANTS[mode];
   const size = variant.size;
@@ -298,7 +299,7 @@ export const GameView: React.FC<GameViewProps> = ({ difficulty, language, onBack
       
       {/* Sidebar - Stats */}
       <div className="w-full md:w-80 h-full flex flex-col gap-6 order-2 md:order-1 mt-8 md:mt-0 md:mr-8">
-        <div className="tunisian-tile p-6 border-2 border-tunisian-gold bg-white shadow-xl rounded-[2rem]">
+        <div className="tunisian-tile sidebar-card p-6 border-2 border-tunisian-gold bg-white shadow-xl rounded-[2rem]">
           <div className="flex items-center justify-between mb-8">
             <div className="flex gap-2">
               <button 
@@ -333,7 +334,9 @@ export const GameView: React.FC<GameViewProps> = ({ difficulty, language, onBack
           <div className="space-y-6">
             <div className={`p-4 rounded-2xl border-4 transition-all relative ${currentPlayer === 1 ? 'border-tunisian-blue bg-tunisian-blue/5 scale-105' : 'border-transparent opacity-50'}`}>
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-6 h-6 rounded-full bg-tunisian-white border-2 border-tunisian-blue" />
+                <div className="w-6 h-6 flex items-center justify-center">
+                  <PlayerPieceIcon player={1} appearance={pieceAppearance} />
+                </div>
                 <span className="font-bold text-tunisian-dark-blue text-lg">Player 1</span>
               </div>
               <div className="flex justify-between items-center">
@@ -351,7 +354,9 @@ export const GameView: React.FC<GameViewProps> = ({ difficulty, language, onBack
 
             <div className={`p-4 rounded-2xl border-4 transition-all relative ${currentPlayer === 2 ? 'border-tunisian-red bg-tunisian-red/5 scale-105' : 'border-transparent opacity-50'}`}>
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-6 h-6 rounded-full bg-tunisian-red border-2 border-tunisian-gold" />
+                <div className="w-6 h-6 flex items-center justify-center">
+                  <PlayerPieceIcon player={2} appearance={pieceAppearance} />
+                </div>
                 <span className="font-bold text-tunisian-dark-blue text-lg">{isVsAI ? "AI Challenger" : "Player 2"}</span>
                 {isAiThinking && <RefreshCw size={16} className="animate-spin text-tunisian-red" />}
               </div>
@@ -416,6 +421,7 @@ export const GameView: React.FC<GameViewProps> = ({ difficulty, language, onBack
                 validMoves={validMoves} 
                 selectedPiece={selectedPiece} 
                 onCellClick={handleCellClick} 
+                appearance={pieceAppearance}
               />
             ) : (
               <div 
@@ -435,6 +441,7 @@ export const GameView: React.FC<GameViewProps> = ({ difficulty, language, onBack
                     isDanger={awshPieces.includes(i)}
                     isSelected={selectedPiece === i}
                     onClick={() => handleCellClick(i)}
+                    appearance={pieceAppearance}
                   />
                 ))}
               </div>
@@ -451,7 +458,7 @@ export const GameView: React.FC<GameViewProps> = ({ difficulty, language, onBack
       <AnimatePresence>
         {winner && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 bg-tunisian-dark-blue/80 backdrop-blur-md flex items-center justify-center z-50 p-6">
-            <motion.div initial={{ scale: 0.5, y: 100 }} animate={{ scale: 1, y: 0 }} className="bg-tunisian-white max-w-sm w-full p-10 rounded-[3rem] border-8 border-tunisian-gold text-center relative">
+            <motion.div initial={{ scale: 0.5, y: 100 }} animate={{ scale: 1, y: 0 }} className="bg-tunisian-white max-w-sm w-full p-10 rounded-[3rem] border-8 border-tunisian-gold text-center relative winner-modal-card">
               <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-32 h-32 bg-tunisian-gold rounded-full border-8 border-tunisian-white flex items-center justify-center text-white shadow-2xl">
                 <Trophy size={64} />
               </div>

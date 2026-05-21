@@ -46,7 +46,7 @@ export const ModeSelection: React.FC<ModeSelectionProps> = ({
             transition={{ delay: idx * 0.05 }}
             className="group relative"
           >
-            <div className="w-full h-full p-8 rounded-[2.5rem] bg-white border-4 border-tunisian-gold/20 shadow-xl flex flex-col items-center text-center transition-all hover:shadow-2xl hover:border-tunisian-gold">
+            <div className="w-full h-full stucco-panel p-8 rounded-[2.5rem] bg-white border-4 border-tunisian-gold/20 shadow-xl flex flex-col items-center text-center transition-all hover:shadow-2xl hover:border-tunisian-gold">
               <div className={`w-20 h-20 rounded-[1.5rem] mb-6 flex items-center justify-center ${v.size > 5 ? 'bg-tunisian-red/10 text-tunisian-red' : 'bg-tunisian-blue/10 text-tunisian-blue'}`}>
                 {v.boardType === 'circular' ? <Globe size={40} /> : v.size === 3 ? <Grid3x3 size={40} /> : <LayoutGrid size={40} />}
               </div>

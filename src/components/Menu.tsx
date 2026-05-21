@@ -6,6 +6,7 @@ import { Globe, Volume2, Music as MusicIcon, Info, X } from 'lucide-react';
 import { MusicSelector } from './MusicSelector';
 import { MusicTrack } from '../constants';
 
+
 interface MenuProps {
   language: Language;
   onLanguageChange: (lang: Language) => void;
@@ -17,12 +18,14 @@ interface MenuProps {
   onMusicToggle: () => void;
   currentTrackId: string;
   onTrackSelect: (track: MusicTrack) => void;
+  pieceAppearance: 'seashell' | 'default';
+  onPieceAppearanceChange: (appearance: 'seashell' | 'default') => void;
 }
 
 export const Menu: React.FC<MenuProps> = ({ 
   language, onLanguageChange, onStart, onRulesSelect,
   soundEnabled, onSoundToggle, musicEnabled, onMusicToggle,
-  currentTrackId, onTrackSelect
+  currentTrackId, onTrackSelect, pieceAppearance, onPieceAppearanceChange
 }) => {
   const t = TRANSLATIONS[language];
 
@@ -34,14 +37,14 @@ export const Menu: React.FC<MenuProps> = ({
         animate={{ scale: 1, opacity: 1 }}
         className="relative mb-16 flex flex-col items-center"
       >
-        <div className="absolute -inset-20 zellige-pattern rounded-full opacity-10 animate-spin-slow pointer-events-none" />
-        
-        <h1 className="text-8xl md:text-9xl font-serif font-black text-tunisian-red drop-shadow-2xl mb-4 relative z-10 transition-all">
-          {t.title}
-        </h1>
-        <div className="p-2 px-8 bg-tunisian-gold rounded-full shadow-lg relative z-10">
-          <span className="text-xl font-bold text-tunisian-dark-blue tracking-widest uppercase">
-            Tunisian Strategy
+        <div className="flex items-center gap-4 md:gap-8 relative z-10">
+          <h1 className="text-8xl md:text-9xl font-serif font-black text-tunisian-red drop-shadow-2xl mb-4 relative z-10 transition-all">
+            {t.title}
+          </h1>
+        </div>
+        <div className="p-2 px-8 bg-tunisian-gold rounded-full shadow-lg relative z-10 w-fit">
+          <span className="text-[24px] leading-[24px] font-bold text-white tracking-widest uppercase">
+            {t.subtitle}
           </span>
         </div>
       </motion.div>
@@ -104,6 +107,31 @@ export const Menu: React.FC<MenuProps> = ({
                 </button>
              </div>
              <span className="text-[10px] font-bold text-tunisian-dark-blue opacity-60 uppercase">Audio Controls</span>
+          </div>
+        </div>
+
+        {/* Piece Appearance Settings */}
+        <div className="bg-white/80 backdrop-blur-sm p-4 rounded-2xl border-2 border-tunisian-gold flex flex-col items-center gap-2">
+          <label className="text-xs font-bold text-tunisian-dark-blue opacity-60 uppercase flex items-center gap-1.5">
+            ✨ {t.pieceStyle}
+          </label>
+          <div className="flex gap-2 w-full">
+            <button
+              id="btn-appearance-seashell"
+              onClick={() => onPieceAppearanceChange('seashell')}
+              className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${pieceAppearance === 'seashell' ? 'bg-tunisian-gold text-white shadow-md' : 'hover:bg-tunisian-sandy/30 text-tunisian-dark-blue/60'}`}
+            >
+              <span>🐚</span>
+              <span>{t.seashell}</span>
+            </button>
+            <button
+              id="btn-appearance-classic"
+              onClick={() => onPieceAppearanceChange('default')}
+              className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${pieceAppearance === 'default' ? 'bg-tunisian-gold text-white shadow-md' : 'hover:bg-tunisian-sandy/30 text-tunisian-dark-blue/60'}`}
+            >
+              <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-tunisian-blue to-tunisian-red" />
+              <span>{t.classic}</span>
+            </button>
           </div>
         </div>
 

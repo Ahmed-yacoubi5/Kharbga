@@ -30,6 +30,23 @@ export default function App() {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [musicEnabled, setMusicEnabled] = useState(false);
   const [currentTrack, setCurrentTrack] = useState<MusicTrack>(MUSIC_TRACKS[0]);
+  const [isTunisianTheme, setIsTunisianTheme] = useState(() => {
+    const saved = localStorage.getItem('theme-tunisian-active');
+    return saved !== null ? saved === 'true' : true;
+  });
+  const [pieceAppearance, setPieceAppearance] = useState<'seashell' | 'default'>(() => {
+    const saved = localStorage.getItem('piece-appearance');
+    return saved === 'default' ? 'default' : 'seashell';
+  });
+
+  useEffect(() => {
+    if (isTunisianTheme) {
+      document.body.classList.add('theme-tunisian');
+    } else {
+      document.body.classList.remove('theme-tunisian');
+    }
+    localStorage.setItem('theme-tunisian-active', String(isTunisianTheme));
+  }, [isTunisianTheme]);
 
   useEffect(() => {
     if (musicEnabled) {
@@ -45,12 +62,33 @@ export default function App() {
     SoundManager.setEnabled(newState);
   };
 
+  const handlePieceAppearanceChange = (appearance: 'seashell' | 'default') => {
+    setPieceAppearance(appearance);
+    localStorage.setItem('piece-appearance', appearance);
+  };
+
   return (
     <div 
       className="relative min-h-screen font-sans selection:bg-tunisian-gold selection:text-tunisian-dark-blue" 
       dir={language === 'ar' ? 'rtl' : 'ltr'}
     >
-      <ZelligeBackground />
+      <ZelligeBackground isTunisian={isTunisianTheme} />
+
+      {/* Theme Toggle Button */}
+      <button 
+        onClick={() => setIsTunisianTheme(!isTunisianTheme)}
+        className="fixed top-4 right-4 z-50 px-4 py-2.5 rounded-full font-serif font-black border-2 shadow-lg transition-all flex items-center gap-2 text-sm bg-white hover:scale-105 active:scale-95 duration-200"
+        style={{
+          borderColor: isTunisianTheme ? '#2E6FD4' : '#C0392B',
+          color: isTunisianTheme ? '#1B4FBF' : '#154360'
+        }}
+        title="Toggle Tunisian Style / Default Theme"
+      >
+        <span className="text-base">🇹🇳</span>
+        <span className="hidden sm:inline">{isTunisianTheme ? 'النمط التونسي' : 'النمط الأصلي'}</span>
+        <span className="hidden sm:inline opacity-30">/</span>
+        <span className="text-xs uppercase font-sans tracking-wider font-semibold">{isTunisianTheme ? 'Tunisian' : 'Default'}</span>
+      </button>
       
       <AnimatePresence mode="wait">
         {view === 'home' && (
@@ -72,6 +110,8 @@ export default function App() {
               onMusicToggle={() => setMusicEnabled(!musicEnabled)}
               currentTrackId={currentTrack.id}
               onTrackSelect={setCurrentTrack}
+              pieceAppearance={pieceAppearance}
+              onPieceAppearanceChange={handlePieceAppearanceChange}
             />
           </motion.div>
         )}
@@ -129,6 +169,7 @@ export default function App() {
               language={language}
               isVsAI={isVsAI}
               mode={gameMode}
+              pieceAppearance={pieceAppearance}
               onShowRules={(mode) => {
                 setRulesInitialVariant(mode);
                 setView('rules');

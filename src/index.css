@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Amiri:wght@400;700&family=Tajawal:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Cairo:wght@400;600;700;900&family=El+Messiri:wght@400;600;700&family=Scheherazade+New:wght@400;700&family=Tajawal:wght@400;700&display=swap');
 
 @theme {
   --font-sans: "Tajawal", "Cairo", ui-sans-serif, system-ui, sans-serif;
@@ -75,5 +75,155 @@ body {
 
 .font-serif {
   font-family: var(--font-serif);
+}
+
+/* ==========================================
+   TUNISIAN MAKE-OVER THEME (Cobalt & Terracotta)
+   ========================================== */
+
+/* Dynamic scoped theme overrides */
+.theme-tunisian {
+  --color-tunisian-red: #C1440E !important;       /* warm terracotta accents */
+  --color-tunisian-blue: #2E6FD4 !important;      /* Sidi Bou Said cobalt blue */
+  --color-tunisian-dark-blue: #1B4FBF !important; /* cobalt blue */
+  --color-tunisian-sandy: #D4B896 !important;     /* sandy beige */
+  --color-tunisian-white: #F5F0E8 !important;     /* stucco whitewashed white */
+  --color-tunisian-gold: #C1440E !important;      /* warm terracotta / gold */
+  
+  --font-serif: "Aref Ruqaa", "El Messiri", "Scheherazade New", "Amiri", serif !important;
+  --font-sans: "Aref Ruqaa", "El Messiri", "Cairo", "Tajawal", sans-serif !important;
+}
+
+/* Base Body Makeover */
+body.theme-tunisian {
+  background-color: #F5F0E8 !important;
+  color: #1B4FBF !important;
+}
+
+/* Subtle Zellige background pattern override */
+.theme-tunisian .zellige-pattern {
+  background-color: #F5F0E8 !important;
+  background-image: 
+    /* Star centers / tiling dots */
+    radial-gradient(circle, #C1440E 6px, transparent 7px),
+    radial-gradient(circle, #2E6FD4 6px, transparent 7px),
+    /* Geometric criss-cross grid lines styled like Islamic mosaic */
+    linear-gradient(45deg, transparent 48%, #D4B896 49%, #D4B896 51%, transparent 52%),
+    linear-gradient(-45deg, transparent 48%, #D4B896 49%, #D4B896 51%, transparent 52%) !important;
+  background-size: 80px 80px !important;
+  background-position: 0 0, 40px 40px, 0 0, 0 0 !important;
+  opacity: 0.16 !important;
+}
+
+/* Stucco / Plaster wall texture on panels */
+.theme-tunisian .tunisian-tile,
+.theme-tunisian .stucco-panel,
+.theme-tunisian .rules-card,
+.theme-tunisian .sidebar-card,
+.theme-tunisian .winner-modal-card {
+  background-color: #FFFFFF !important;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.035'/%3E%3C/svg%3E") !important;
+  border-color: #2E6FD4 !important;
+  border-width: 3px !important;
+  box-shadow: 0 10px 25px -5px rgba(27, 79, 191, 0.15), 0 8px 16px -4px rgba(212, 184, 150, 0.25) !important;
+}
+
+/* Moorish Archway shapes for Panels & Modal */
+.theme-tunisian .stucco-panel,
+.theme-tunisian .winner-modal-card,
+.theme-tunisian .sidebar-card {
+  border-radius: 80px 80px 24px 24px !important;
+}
+
+/* Moorish Arch for rules and cards */
+.theme-tunisian .rules-card {
+  border-radius: 100px 100px 32px 32px !important;
+}
+
+/* Main Menu settings box / items styling */
+.theme-tunisian .bg-white\/80 {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-color: #2E6FD4 !important;
+  border-radius: 24px !important;
+}
+
+/* Let's style buttons to be domed */
+.theme-tunisian button,
+.theme-tunisian .dome-btn {
+  border-radius: 20px 20px 12px 12px;
+}
+
+.theme-tunisian button[class*="py-6"] {
+  border-radius: 40px 40px 20px 20px !important;
+  background: linear-gradient(135deg, #2E6FD4, #1B4FBF) !important;
+  border-color: #1B4FBF !important;
+}
+
+.theme-tunisian button[class*="py-4"] {
+  border-radius: 24px 24px 16px 16px !important;
+  background-color: #D4B896 !important;
+  color: #FFFFFF !important;
+}
+
+/* Hand-painted blue & white ceramic tile styling for game board cells */
+.theme-tunisian .board-cell-tile {
+  background: #FFFFFF !important;
+  border: 2px solid #2E6FD4 !important;
+  border-radius: 6px !important;
+  box-shadow: inset 0 0 12px rgba(46, 111, 212, 0.1), 0 2px 4px rgba(0,0,0,0.05) !important;
+}
+
+/* Hand painted geometric dash motif inside blue ceramic tiles */
+.theme-tunisian .board-cell-tile::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px dashed rgba(46, 111, 212, 0.35) !important;
+  pointer-events: none;
+  border-radius: 4px;
+}
+
+.theme-tunisian .center-square {
+  background: radial-gradient(circle, #2E6FD4 30%, #1B4FBF 100%) !important;
+  border-color: #C1440E !important;
+}
+
+/* Carved Stone or Painted Ceramic Discs for game pieces */
+.theme-tunisian .ceramic-piece-p1 {
+  background: radial-gradient(circle at 35% 35%, #FFFFFF 0%, #E5E9F0 60%, #C8D1E0 100%) !important;
+  border-color: #1B4FBF !important;
+  box-shadow: 
+    0 10px 15px -3px rgba(0, 0, 0, 0.2), 
+    inset 0 4px 6px rgba(27, 79, 191, 0.25),
+    inset 0 -4px 8px rgba(0,0,0,0.15) !important;
+}
+
+.theme-tunisian .ceramic-piece-p2 {
+  background: radial-gradient(circle at 35% 35%, #FF7F50 0%, #C1440E 70%, #8B2500 100%) !important;
+  border-color: #F5F0E8 !important;
+  box-shadow: 
+    0 10px 15px -3px rgba(0, 0, 0, 0.25), 
+    inset 0 4px 6px rgba(255, 255, 255, 0.35),
+    inset 0 -4px 8px rgba(0,0,0,0.3) !important;
+}
+
+.theme-tunisian .ceramic-piece-p1 > div {
+  border-color: #1B4FBF !important;
+  opacity: 0.55 !important;
+  border-style: solid !important;
+}
+
+.theme-tunisian .ceramic-piece-p2 > div {
+  border-color: #FFFFFF !important;
+  opacity: 0.55 !important;
+  border-style: solid !important;
+}
+
+/* Scoped decorative elements visibility */
+.theme-palm-icon {
+  display: none !important;
+}
+.theme-tunisian .theme-palm-icon {
+  display: block !important;
 }
 

@@ -6,7 +6,7 @@ import {
   Player, GamePhase, Language, GameMode,
   TRANSLATIONS, LobbyData, GAME_VARIANTS
 } from '../types';
-import { BoardCell, CircularBoard } from './BoardElements';
+import { BoardCell, CircularBoard, SeashellIcon } from './BoardElements';
 import { getNeighbors, checkCapturesEncircle, getValidMoves, getAwshPieces, checkWinAlignment, getJumpMoves } from '../logic/engine';
 import { Trophy, ArrowLeft, RefreshCw, Sparkles, AlertTriangle, WifiOff, HelpCircle } from 'lucide-react';
 import { SoundManager } from '../services/soundService';
@@ -155,11 +155,17 @@ export const OnlineGameView: React.FC<OnlineGameViewProps> = ({ lobby: initialLo
           </div>
           <div className="space-y-6">
             <div className={`p-4 rounded-2xl border-4 transition-all ${currentPlayer === 1 ? 'border-tunisian-blue bg-tunisian-blue/5 scale-105' : 'border-transparent opacity-50'}`}>
-              <span className="font-bold">{lobby.hostName}</span>
+              <div className="flex items-center gap-2 mb-1">
+                <SeashellIcon player={1} className="w-6 h-6" />
+                <span className="font-bold">{lobby.hostName}</span>
+              </div>
               <div className="text-3xl font-black">{board.filter(p => p === 1).length}</div>
             </div>
             <div className={`p-4 rounded-2xl border-4 transition-all ${currentPlayer === 2 ? 'border-tunisian-red bg-tunisian-red/5 scale-105' : 'border-transparent opacity-50'}`}>
-              <span className="font-bold">{(Object.values(lobby.players) as any[]).find(p => p && !p.isHost)?.name || "Challenger"}</span>
+              <div className="flex items-center gap-2 mb-1">
+                <SeashellIcon player={2} className="w-6 h-6" />
+                <span className="font-bold">{(Object.values(lobby.players) as any[]).find(p => p && !p.isHost)?.name || "Challenger"}</span>
+              </div>
               <div className="text-3xl font-black">{board.filter(p => p === 2).length}</div>
             </div>
           </div>

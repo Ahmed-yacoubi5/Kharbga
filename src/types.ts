@@ -72,6 +72,7 @@ export const getPiecesPerPlayer = (size: BoardSize) => Math.floor((size * size -
 export const TRANSLATIONS = {
   en: {
     title: "KHARBGA",
+    subtitle: "Tunisian Strategy",
     start: "Start Game",
     playOnline: "Online Arena",
     createLobby: "Open a Hall",
@@ -133,9 +134,13 @@ export const TRANSLATIONS = {
     stalemate: "Stalemate!",
     draw: "It's a Draw!",
     nicknameRequired: "Nickname required",
+    pieceStyle: "Piece Style",
+    seashell: "Seashells",
+    classic: "Classic",
   },
   fr: {
     title: "KHARBGA",
+    subtitle: "Tunisian Strategy",
     start: "Commencer",
     playOnline: "Arène en Ligne",
     createLobby: "Ouvrir un Salon",
@@ -197,9 +202,13 @@ export const TRANSLATIONS = {
     stalemate: "Pat !",
     draw: "Match nul !",
     nicknameRequired: "Pseudo requis",
+    pieceStyle: "Style des pièces",
+    seashell: "Coquillages",
+    classic: "Classique",
   },
   ar: {
-    title: "الخربقة",
+    title: "الخربڨة",
+    subtitle: "تكتيك تونسي",
     start: "ابدأ اللعبة",
     playOnline: "الساحة العالمية",
     createLobby: "فتح مجلس",
@@ -222,7 +231,7 @@ export const TRANSLATIONS = {
     thalouthName: "الثلوثية",
     thalouthDesc: "اصطفاف رصيف سريع 3x3",
     tleishaName: "تليشة",
-    tleishaDesc: "خربقة دائرية تقليدية من الرقاب",
+    tleishaDesc: "خربڨة دائرية تقليدية من الرقاب",
     tashaName: "طشة",
     tashaDesc: "أصغر أفراد العائلة - لعب بالبيوت",
     khamoussiyaJumpName: "الخموسية - القفز",
@@ -236,7 +245,7 @@ export const TRANSLATIONS = {
     sabouiyaGuettarName: "السبوعية - القطار",
     sabouiyaGuettarDesc: "طريقة الحصر الفوري واللعب المتواصل",
     rules: "دليل القواعد",
-    history: "تاريخ الخربقة",
+    history: "تاريخ الخربڨة",
     backToGame: "العودة للعب",
     learnVariant: "تعلم القواعد",
     playVsAI: "ضد الحاسوب",
@@ -261,5 +270,8 @@ export const TRANSLATIONS = {
     stalemate: "انسداد اللعب!",
     draw: "تعادل!",
     nicknameRequired: "اللقب مطلوب",
+    pieceStyle: "مظهر الحجارة",
+    seashell: "الودع (البحر)",
+    classic: "الخزف التقليدي",
   }
 };

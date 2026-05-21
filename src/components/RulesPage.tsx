@@ -19,7 +19,7 @@ export const RulesPage: React.FC<RulesPageProps> = ({ language, onBack, initialV
       title: t.history,
       icon: <History />,
       content: isAr 
-        ? "الخربقة هي لعبة استراتيجية تقليدية تونسية ضاربة في القدم. تعود أصولها إلى العصر الهلالي، وترتبط بقصص الجازية الهلالية وذياب. اللعبة ليست مجرد تسلية، بل هي مدرسة في التخطيط العسكري الشعبي، حيث تعني كلمة 'خربقة' في جذرها العربي القطع أو التشويش على خطط الخصم."
+        ? "الخربڨة هي لعبة استراتيجية تقليدية تونسية ضاربة في القدم. تعود أصولها إلى العصر الهلالي، وترتبط بقصص الجازية الهلالية وذياب. اللعبة ليست مجرد تسلية، بل هي مدرسة في التخطيط العسكري الشعبي، حيث تعني كلمة 'خربڨة' في جذرها العربي القطع أو التشويش على خطط الخصم."
         : "Karbagha is Tunisia's foremost traditional strategic board game. Its roots trace back to the Hilalian era, linked to the epic tales of Al-Jaziya and Dhiab. More than just a game, it is a school of popular military strategy - its name derives from the Arabic root meaning 'to cut' or 'to disrupt' the opponent's plans."
     },
     {
@@ -35,7 +35,7 @@ export const RulesPage: React.FC<RulesPageProps> = ({ language, onBack, initialV
        title: t.tleishaName,
        icon: <Sparkles />,
        content: isAr
-         ? "خربقة دائرية من منطقة الرقاب. تبدأ بوضع قطعة في المركز، ثم نصل إلى 3 قطع لكل لاعب. الهدف: تكوين خط مستقيم يمر بقطر الدائرة."
+         ? "خربڨة دائرية من منطقة الرقاب. تبدأ بوضع قطعة في المركز، ثم نصل إلى 3 قطع لكل لاعب. الهدف: تكوين خط مستقيم يمر بقطر الدائرة."
          : "A circular variant from Al-Raqab. Starts with a piece in the center, 3 pieces per player. Goal: Form a straight line along a diameter of the circle."
     },
     {
@@ -78,7 +78,7 @@ export const RulesPage: React.FC<RulesPageProps> = ({ language, onBack, initialV
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="tunisian-tile p-8 bg-white border-4 border-tunisian-gold rounded-[2rem] shadow-xl"
+              className="tunisian-tile rules-card p-8 bg-white border-4 border-tunisian-gold rounded-[2rem] shadow-xl"
             >
               <div className="flex items-center gap-4 mb-6">
                 <div className="p-3 bg-tunisian-blue/10 text-tunisian-blue rounded-xl">
