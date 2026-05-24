@@ -38,7 +38,11 @@ export const Menu: React.FC<MenuProps> = ({
         className="relative mb-16 flex flex-col items-center"
       >
         <div className="flex items-center gap-4 md:gap-8 relative z-10">
-          <h1 className="text-8xl md:text-9xl font-serif font-black text-tunisian-red drop-shadow-2xl mb-4 relative z-10 transition-all">
+          <h1 
+            id="menu-title-heading"
+            style={{ fontFamily: "'Comic Neue', sans-serif", fontSize: '97px', lineHeight: '97px', fontWeight: 'bold', fontStyle: 'normal' }}
+            className="text-tunisian-red drop-shadow-2xl mb-4 relative z-10 transition-all"
+          >
             {t.title}
           </h1>
         </div>

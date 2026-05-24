@@ -1,0 +1,8 @@
+{
+  "appId": "com.kharbga.tunisianstrategy",
+  "appName": "Kharbga: Tunisian Strategy",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}

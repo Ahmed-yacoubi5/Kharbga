@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Kharbga: Tunisian Strategy</string>
+    <string name="title_activity_main">Kharbga: Tunisian Strategy</string>
+    <string name="package_name">com.kharbga.tunisianstrategy</string>
+    <string name="custom_url_scheme">com.kharbga.tunisianstrategy</string>
+</resources>
