@@ -3,15 +3,16 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   collection, query, where, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, getDocs
 } from 'firebase/firestore';
-import { db, auth, ensureAuth, handleFirestoreError, OperationType, loginWithGoogle } from '../lib/firebase';
+import { db, auth, ensureAuth, handleFirestoreError, OperationType, loginWithGoogle, logoutUser } from '../lib/firebase';
 import { Language, TRANSLATIONS, LobbyData, GameMode, GAME_VARIANTS, GameVariantInfo } from '../types';
 import { 
   Plus, Users, Lock, Unlock, ArrowLeft, RefreshCw, 
-  Shield, User as UserIcon, Signal, AlertCircle, LogIn, Trophy, 
+  Shield, User as UserIcon, Signal, AlertCircle, LogIn, LogOut, Trophy, 
   Edit2, Check, Sparkles, Swords, Award, Percent
 } from 'lucide-react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { StatsService, PlayerStats } from '../services/statsService';
+import { InactivityService } from '../services/inactivityService';
 
 interface MultiplayerViewProps {
   language: Language;
@@ -137,6 +138,25 @@ export const MultiplayerView: React.FC<MultiplayerViewProps> = ({
       if (srvStats) setStats(srvStats);
     } catch (err: any) {
       setError(err.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogout = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      if (currentUser) {
+        InactivityService.clearActivity(currentUser.uid);
+      }
+      await logoutUser();
+      setCurrentUser(null);
+      // Revert to local saved stats and default nickname if desired
+      const localStats = StatsService.getLocalStats();
+      setStats(localStats);
+    } catch (err: any) {
+      setError(err.message || "Logout failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -331,18 +351,38 @@ export const MultiplayerView: React.FC<MultiplayerViewProps> = ({
             </div>
           </div>
 
-          {/* Optional Google Sign-In */}
+          {/* Optional Google Sign-In & Log Out */}
           {!currentUser || currentUser.isAnonymous ? (
             <button
               onClick={handleGoogleLogin}
               className="px-4 py-2.5 rounded-xl bg-white border-2 border-tunisian-gold hover:border-tunisian-blue text-xs font-bold text-tunisian-dark-blue flex items-center gap-2 shadow-sm transition-all shrink-0 hover:scale-105"
             >
               <LogIn size={14} className="text-tunisian-blue" />
-              <span>{language === 'ar' ? 'ربط بحساب Google' : (language === 'fr' ? 'Lier compte Google' : 'Sign in with Google')}</span>
+              <span>{t.signInWithGoogle || 'Sign in with Google'}</span>
             </button>
           ) : (
-            <div className="text-xs font-bold text-green-700 bg-green-50 px-3 py-1.5 rounded-xl border border-green-200 flex items-center gap-1.5">
-              <Check size={14} /> Google Connected
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="text-xs font-bold text-green-800 bg-green-50 px-3 py-2 rounded-xl border border-green-200 flex items-center gap-2 shadow-sm max-w-[200px] sm:max-w-none truncate">
+                {currentUser.photoURL ? (
+                  <img 
+                    src={currentUser.photoURL} 
+                    alt="Google Profile" 
+                    referrerPolicy="no-referrer"
+                    className="w-5 h-5 rounded-full border border-green-400 shrink-0" 
+                  />
+                ) : (
+                  <Check size={14} className="text-green-600 shrink-0" />
+                )}
+                <span className="truncate">{currentUser.displayName || currentUser.email || t.googleConnected}</span>
+              </div>
+              <button
+                onClick={handleGoogleLogout}
+                className="px-3 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-tunisian-red border border-red-200 text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm hover:scale-105 active:scale-95"
+                title={t.logOut}
+              >
+                <LogOut size={14} />
+                <span>{t.logOut}</span>
+              </button>
             </div>
           )}
         </div>

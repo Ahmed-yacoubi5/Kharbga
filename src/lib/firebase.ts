@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, onAuthStateChanged, User, GoogleAuthProvider, signInWithPopup, signInAnonymously } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, User, GoogleAuthProvider, signInWithPopup, signInAnonymously, signOut } from 'firebase/auth';
 import { getFirestore, enableMultiTabIndexedDbPersistence } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
@@ -84,6 +84,10 @@ export const loginWithGoogle = async (): Promise<User> => {
   }
 };
 
+export const logoutUser = async (): Promise<void> => {
+  await signOut(auth);
+};
+
 export const ensureAuth = async (): Promise<User> => {
   if (auth.currentUser) return auth.currentUser;
   
@@ -104,4 +108,5 @@ export const ensureAuth = async (): Promise<User> => {
     });
   }
 };
+
 

@@ -35,13 +35,13 @@ service cloud.firestore {
         && incoming().createdAt == request.time;
 
       allow update: if isVerified() && (
-        // Action: Heartbeat
-        (incoming().diff(existing()).affectedKeys().hasOnly(['players.' + request.auth.uid + '.lastSeen']))
+        // Action: Heartbeat (Any player currently in this lobby)
+        (incoming().diff(existing()).affectedKeys().hasOnly(['players']))
         || 
-        // Action: Join
+        // Action: Join (Second player joining a waiting lobby)
         (existing().status == 'waiting' && existing().playerCount == 1 
          && incoming().playerCount == 2 
-         && incoming().diff(existing()).affectedKeys().hasOnly(['playerCount', 'players.' + request.auth.uid])
+         && incoming().diff(existing()).affectedKeys().hasOnly(['playerCount', 'players'])
          && (!existing().isPublic ? (incoming().pin == existing().pin) : true))
         ||
         // Action: Start Game (Host only)
@@ -49,14 +49,14 @@ service cloud.firestore {
          && incoming().status == 'playing' && incoming().playerCount == 2
          && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'lastMoveAt']))
         ||
-        // Action: Move / Game Sync
+        // Action: Move / Game Sync / Forfeit
         (existing().status == 'playing' 
          && (existing().players.keys().hasAll([request.auth.uid]))
          && incoming().diff(existing()).affectedKeys().hasAny(['board', 'currentPlayer', 'phase', 'piecesLeftToPlace', 'moveCount', 'winner', 'status', 'lastMoveAt', 'forfeitBy', 'reconnectUntil']))
         ||
         // Action: Leave/Disconnect
         (incoming().playerCount < existing().playerCount 
-         && incoming().diff(existing()).affectedKeys().hasOnly(['playerCount', 'players.' + request.auth.uid]))
+         && incoming().diff(existing()).affectedKeys().hasOnly(['playerCount', 'players']))
       );
 
       allow delete: if isVerified() && (existing().hostId == request.auth.uid || existing().status == 'finished');

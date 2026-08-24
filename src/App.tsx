@@ -20,10 +20,15 @@ import { OnlineGameView } from './components/OnlineGameView';
 import { Language, Difficulty, GameMode, LobbyData } from './types';
 import { SoundManager } from './services/soundService';
 import { RulesPage } from './components/RulesPage';
+import { InactivityService } from './services/inactivityService';
 
 import { MusicTrack, MUSIC_TRACKS } from './constants';
 
 export default function App() {
+  // Initialize automatic 7-day inactivity logout listener
+  useEffect(() => {
+    InactivityService.init();
+  }, []);
   const [view, setView] = useState<'home' | 'modeSelection' | 'game' | 'rules' | 'multiplayer' | 'onlineLobby' | 'onlineGame'>('home');
   const [rulesInitialVariant, setRulesInitialVariant] = useState<GameMode | undefined>();
   const [activeLobby, setActiveLobby] = useState<LobbyData | null>(null);

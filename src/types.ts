@@ -153,6 +153,10 @@ export const TRANSLATIONS = {
     seashell: "Seashells",
     classic: "Classic",
     clientCosmeticsNote: "Themes, piece style & music are personalized to your screen",
+    logOut: "Log Out",
+    signInWithGoogle: "Sign in with Google",
+    googleConnected: "Google Account Active",
+    guestUser: "Guest Player",
   },
   fr: {
     title: "KHARBGA",
@@ -236,6 +240,10 @@ export const TRANSLATIONS = {
     seashell: "Coquillages",
     classic: "Classique",
     clientCosmeticsNote: "Les thèmes, pièces et musiques sont propres à votre écran",
+    logOut: "Se Déconnecter",
+    signInWithGoogle: "Connexion Google",
+    googleConnected: "Compte Google Connecté",
+    guestUser: "Joueur Invité",
   },
   ar: {
     title: "الخربڨة",
@@ -319,5 +327,9 @@ export const TRANSLATIONS = {
     seashell: "الودع (البحر)",
     classic: "الخزف التقليدي",
     clientCosmeticsNote: "المظهر، القطع والموسيقى مخصصة لجهازك فقط بحرية",
+    logOut: "تسجيل الخروج",
+    signInWithGoogle: "ربط بحساب Google",
+    googleConnected: "حساب Google متصل",
+    guestUser: "لاعب زائر",
   }
 };
