@@ -59,7 +59,12 @@ service cloud.firestore {
          && incoming().diff(existing()).affectedKeys().hasOnly(['playerCount', 'players']))
       );
 
-      allow delete: if isVerified() && (existing().hostId == request.auth.uid || existing().status == 'finished');
+      allow delete: if isVerified() && (
+        existing().hostId == request.auth.uid 
+        || existing().status == 'finished'
+        || existing().playerCount == 0
+        || (request.time > existing().createdAt + duration.value(10, 'm'))
+      );
     }
 
     // 2. Users Collection

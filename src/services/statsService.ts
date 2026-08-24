@@ -85,18 +85,26 @@ export const StatsService = {
     }
   },
 
-  async recordGameResult(outcome: 'win' | 'loss' | 'draw', nickname: string): Promise<PlayerStats> {
-    // 1. Update local storage
+  isGuest(): boolean {
+    const user = auth.currentUser;
+    return !user || user.isAnonymous;
+  },
+
+  async recordGameResult(outcome: 'win' | 'loss' | 'draw', nickname: string): Promise<{ stats: PlayerStats; isSaved: boolean }> {
     const delta = {
       wins: outcome === 'win' ? 1 : 0,
       losses: outcome === 'loss' ? 1 : 0,
       draws: outcome === 'draw' ? 1 : 0,
     };
-    const newLocalStats = this.saveLocalStats(delta);
 
-    // 2. Update server side if authenticated
     const user = auth.currentUser;
-    if (user) {
+    const isGoogleUser = Boolean(user && !user.isAnonymous);
+
+    if (isGoogleUser && user) {
+      // 1. Permanently update local storage for authenticated user
+      const newLocalStats = this.saveLocalStats(delta);
+
+      // 2. Permanently update server side Firestore profile
       try {
         const userRef = doc(db, 'users', user.uid);
         await setDoc(userRef, {
@@ -111,8 +119,22 @@ export const StatsService = {
       } catch (err) {
         console.warn('Could not record server game result:', err);
       }
-    }
 
-    return newLocalStats;
+      return { stats: newLocalStats, isSaved: true };
+    } else {
+      // For Guests: Progress is transient and not saved to the cloud
+      console.log('Guest match completed. Outcome is not saved to permanent cloud profile.');
+      const currentStats = this.getLocalStats();
+      return { 
+        stats: {
+          wins: currentStats.wins + delta.wins,
+          losses: currentStats.losses + delta.losses,
+          draws: currentStats.draws + delta.draws,
+          totalGames: currentStats.totalGames + 1,
+          winRate: (currentStats.totalGames + 1) > 0 ? Math.round(((currentStats.wins + delta.wins) / (currentStats.totalGames + 1)) * 100) : 0
+        }, 
+        isSaved: false 
+      };
+    }
   },
 };

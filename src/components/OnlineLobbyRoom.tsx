@@ -3,7 +3,13 @@ import { motion } from 'motion/react';
 import { doc, onSnapshot, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db, auth, handleFirestoreError, OperationType } from '../lib/firebase';
 import { Language, TRANSLATIONS, LobbyData, GAME_VARIANTS } from '../types';
-import { Users, User, ArrowLeft, Play, Shield, Loader2, Hourglass, Lock, Copy, Check, Sparkles } from 'lucide-react';
+import { 
+  Users, User, ArrowLeft, Play, Shield, Loader2, Hourglass, 
+  Lock, Copy, Check, Sparkles, Clock, AlertTriangle, ShieldCheck
+} from 'lucide-react';
+import { 
+  getLobbyInactiveRemainingSeconds, formatTimeoutMMSS, isLobbyInactive, purgeExpiredLobby 
+} from '../services/lobbyTimeoutService';
 
 interface OnlineLobbyRoomProps {
   language: Language;
@@ -39,8 +45,32 @@ export const OnlineLobbyRoom: React.FC<OnlineLobbyRoomProps> = ({
       handleFirestoreError(err, OperationType.GET, `lobbies/${lobbyId}`);
     });
 
-    return () => unsubscribe();
-  }, [lobbyId]);
+    // Active player heartbeat so active rooms remain alive while player is present
+    const heartbeat = setInterval(() => {
+      const currentUid = auth.currentUser?.uid;
+      if (currentUid) {
+        updateDoc(doc(db, 'lobbies', lobbyId), {
+          [`players.${currentUid}.lastSeen`]: Date.now()
+        }).catch(() => {});
+      }
+    }, 5000);
+
+    return () => {
+      unsubscribe();
+      clearInterval(heartbeat);
+    };
+  }, [lobbyId, onStartGame, onBack]);
+
+  // Inactivity auto-deletion: If no activity from any player for 10 minutes
+  useEffect(() => {
+    if (!lobby) return;
+
+    if (isLobbyInactive(lobby)) {
+      console.warn(`Lobby ${lobbyId} was inactive for >10 minutes. Deleting.`);
+      purgeExpiredLobby(lobbyId);
+      onBack();
+    }
+  }, [lobby, lobbyId, onBack]);
 
   const handleStart = async () => {
     if (!lobby || !isHost || lobby.playerCount < 2) return;
@@ -130,7 +160,7 @@ export const OnlineLobbyRoom: React.FC<OnlineLobbyRoomProps> = ({
              </span>
           </div>
 
-          <div className="flex items-center justify-center gap-3">
+          <div className="flex flex-wrap items-center justify-center gap-3">
             <span className="text-xs font-bold text-tunisian-dark-blue/60">
               {lobby.isPublic ? t.public : t.private}
             </span>
@@ -145,6 +175,12 @@ export const OnlineLobbyRoom: React.FC<OnlineLobbyRoomProps> = ({
                 {copied ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
               </button>
             )}
+
+            {/* Active Hall Status Badge */}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-green-50 text-green-800 border border-green-200 shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <span>{t.lobbyName}: Active</span>
+            </div>
           </div>
         </div>
 

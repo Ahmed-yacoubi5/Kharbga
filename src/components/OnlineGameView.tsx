@@ -14,10 +14,13 @@ import {
 import { 
   Trophy, ArrowLeft, Sparkles, AlertTriangle, 
   WifiOff, HelpCircle, Flag, RotateCcw, ShieldAlert,
-  Swords, CheckCircle, Flame
+  Swords, CheckCircle, Flame, Check, Clock
 } from 'lucide-react';
 import { SoundManager } from '../services/soundService';
 import { StatsService } from '../services/statsService';
+import { 
+  getLobbyInactiveRemainingSeconds, formatTimeoutMMSS, isLobbyInactive, purgeExpiredLobby 
+} from '../services/lobbyTimeoutService';
 
 interface OnlineGameViewProps {
   lobby: LobbyData;
@@ -43,6 +46,15 @@ export const OnlineGameView: React.FC<OnlineGameViewProps> = ({
   const myId = auth.currentUser?.uid;
   const isP1 = myId === lobby.hostId;
   const myPlayerRole: Player = isP1 ? 1 : 2;
+
+  // Inactivity Auto-Cleanup: Purges match if abandoned for 10 minutes
+  useEffect(() => {
+    if (isLobbyInactive(lobby)) {
+      console.warn(`Match ${lobby.id} was abandoned for >10 minutes.`);
+      purgeExpiredLobby(lobby.id);
+      onBack();
+    }
+  }, [lobby, onBack]);
 
   const opponentInfo = useMemo(() => {
     if (!lobby.players) return null;
@@ -303,7 +315,7 @@ export const OnlineGameView: React.FC<OnlineGameViewProps> = ({
           <span>{t.forfeit}</span>
         </button>
 
-        <div className="text-center">
+        <div className="text-center flex flex-col items-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/95 rounded-full border border-tunisian-gold/40 shadow-sm">
             <span className="w-2 h-2 rounded-full bg-tunisian-gold animate-pulse" />
             <span className="font-serif font-black text-tunisian-dark-blue text-sm md:text-base">
@@ -551,14 +563,27 @@ export const OnlineGameView: React.FC<OnlineGameViewProps> = ({
                 {winner === myPlayerRole ? "Victorious!" : "Defeat"}
               </h2>
 
-              <p className="text-sm font-bold text-tunisian-dark-blue/70 mb-6">
+              <p className="text-sm font-bold text-tunisian-dark-blue/70 mb-4">
                 {lobby.forfeitBy 
                   ? (lobby.forfeitBy === myId ? t.youForfeited : t.opponentForfeited)
                   : (winner === myPlayerRole 
-                      ? "Mastery achieved in the Medina! Match stats have been saved." 
-                      : "Honorable contest! Match stats have been updated.")
+                      ? "Mastery achieved in the Medina!" 
+                      : "Honorable contest in the Medina!")
                 }
               </p>
+
+              {/* Guest vs Cloud Saved Notice */}
+              {StatsService.isGuest() ? (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-2.5 mb-5 text-[11px] font-bold text-amber-900 flex items-center justify-center gap-1.5 shadow-sm">
+                  <span>⚠️</span>
+                  <span>{t.guestModeNotice || 'Playing as Guest: Match outcome not saved to permanent account.'}</span>
+                </div>
+              ) : (
+                <div className="bg-green-50 border border-green-200 rounded-xl p-2.5 mb-5 text-[11px] font-bold text-green-800 flex items-center justify-center gap-1.5 shadow-sm">
+                  <Check size={14} className="text-green-600 shrink-0" />
+                  <span>{t.statsSavedNotice || 'Permanent Cloud Stats: Record updated successfully!'}</span>
+                </div>
+              )}
 
               <div className="bg-tunisian-sandy/30 border border-tunisian-gold/30 rounded-2xl p-4 mb-6 flex justify-around text-xs font-bold text-tunisian-dark-blue">
                 <div>

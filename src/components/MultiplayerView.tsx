@@ -8,11 +8,14 @@ import { Language, TRANSLATIONS, LobbyData, GameMode, GAME_VARIANTS, GameVariant
 import { 
   Plus, Users, Lock, Unlock, ArrowLeft, RefreshCw, 
   Shield, User as UserIcon, Signal, AlertCircle, LogIn, LogOut, Trophy, 
-  Edit2, Check, Sparkles, Swords, Award, Percent
+  Edit2, Check, Sparkles, Swords, Award, Percent, Clock, Timer
 } from 'lucide-react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { StatsService, PlayerStats } from '../services/statsService';
 import { InactivityService } from '../services/inactivityService';
+import { 
+  getLobbyInactiveRemainingSeconds, formatTimeoutMMSS, isLobbyInactive, purgeExpiredLobby 
+} from '../services/lobbyTimeoutService';
 
 interface MultiplayerViewProps {
   language: Language;
@@ -49,6 +52,23 @@ export const MultiplayerView: React.FC<MultiplayerViewProps> = ({
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [joiningLobby, setJoiningLobby] = useState<LobbyData | null>(null);
+  const [, setTick] = useState(0);
+
+  // 1-second interval to purge inactive/deserted lobbies where no player was active for 10 minutes
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTick(t => t + 1);
+      
+      // Purge inactive halls where neither player is involved (>10 minutes without activity)
+      lobbies.forEach(lobby => {
+        if (isLobbyInactive(lobby)) {
+          purgeExpiredLobby(lobby.id);
+        }
+      });
+    }, 2000);
+
+    return () => clearInterval(timer);
+  }, [lobbies]);
 
   // Auth & Lobbies Subscription
   useEffect(() => {
@@ -271,7 +291,7 @@ export const MultiplayerView: React.FC<MultiplayerViewProps> = ({
       </div>
 
       {/* Player Identity & Win/Loss Record Bar */}
-      <div className="bg-white/95 backdrop-blur-md rounded-3xl border-4 border-tunisian-gold/50 shadow-xl p-5 mb-8">
+      <div className="bg-white/95 backdrop-blur-md rounded-3xl border-4 border-tunisian-gold/50 shadow-xl p-5 mb-4">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           {/* Editable Nickname */}
           <div className="flex items-center gap-4 w-full md:w-auto">
@@ -284,9 +304,13 @@ export const MultiplayerView: React.FC<MultiplayerViewProps> = ({
                 <span className="text-[11px] font-black uppercase tracking-wider text-tunisian-dark-blue/50">
                   {t.nickname}
                 </span>
-                {currentUser?.isAnonymous && (
-                  <span className="text-[10px] bg-tunisian-sandy text-tunisian-dark-blue px-2 py-0.5 rounded-full font-bold">
-                    Guest
+                {(!currentUser || currentUser.isAnonymous) ? (
+                  <span className="text-[10px] bg-amber-100 text-amber-900 border border-amber-300 px-2.5 py-0.5 rounded-full font-black tracking-wide">
+                    {t.guestUser || 'Guest'}
+                  </span>
+                ) : (
+                  <span className="text-[10px] bg-green-100 text-green-800 border border-green-300 px-2 py-0.5 rounded-full font-black tracking-wide flex items-center gap-1">
+                    <Check size={10} /> {t.statsSavedNotice || 'Cloud Synced'}
                   </span>
                 )}
               </div>
@@ -328,37 +352,47 @@ export const MultiplayerView: React.FC<MultiplayerViewProps> = ({
           </div>
 
           {/* Stats Bar */}
-          <div className="flex items-center gap-4 bg-tunisian-sandy/30 border border-tunisian-gold/30 px-5 py-3 rounded-2xl w-full md:w-auto justify-around">
-            <div className="text-center">
-              <div className="text-xs font-bold text-tunisian-dark-blue/50 uppercase">{t.wins}</div>
-              <div className="text-xl font-black text-green-600 flex items-center justify-center gap-1">
-                <Trophy size={16} /> {stats.wins}
+          <div className="flex flex-col items-center gap-1 w-full md:w-auto">
+            <div className="flex items-center gap-4 bg-tunisian-sandy/30 border border-tunisian-gold/30 px-5 py-3 rounded-2xl w-full justify-around">
+              <div className="text-center">
+                <div className="text-xs font-bold text-tunisian-dark-blue/50 uppercase">{t.wins}</div>
+                <div className="text-xl font-black text-green-600 flex items-center justify-center gap-1">
+                  <Trophy size={16} /> {stats.wins}
+                </div>
+              </div>
+              <div className="w-[1px] h-8 bg-tunisian-dark-blue/15" />
+              <div className="text-center">
+                <div className="text-xs font-bold text-tunisian-dark-blue/50 uppercase">{t.losses}</div>
+                <div className="text-xl font-black text-tunisian-red flex items-center justify-center gap-1">
+                  <Shield size={16} /> {stats.losses}
+                </div>
+              </div>
+              <div className="w-[1px] h-8 bg-tunisian-dark-blue/15" />
+              <div className="text-center">
+                <div className="text-xs font-bold text-tunisian-dark-blue/50 uppercase">{t.winRate}</div>
+                <div className="text-xl font-black text-tunisian-blue flex items-center justify-center gap-1">
+                  <Percent size={16} /> {stats.winRate}%
+                </div>
               </div>
             </div>
-            <div className="w-[1px] h-8 bg-tunisian-dark-blue/15" />
-            <div className="text-center">
-              <div className="text-xs font-bold text-tunisian-dark-blue/50 uppercase">{t.losses}</div>
-              <div className="text-xl font-black text-tunisian-red flex items-center justify-center gap-1">
-                <Shield size={16} /> {stats.losses}
-              </div>
-            </div>
-            <div className="w-[1px] h-8 bg-tunisian-dark-blue/15" />
-            <div className="text-center">
-              <div className="text-xs font-bold text-tunisian-dark-blue/50 uppercase">{t.winRate}</div>
-              <div className="text-xl font-black text-tunisian-blue flex items-center justify-center gap-1">
-                <Percent size={16} /> {stats.winRate}%
-              </div>
-            </div>
+            {(!currentUser || currentUser.isAnonymous) && (
+              <span className="text-[10px] text-amber-800 font-bold">
+                ⚠️ {t.guestSessionNotice || 'Guest Session (Unsaved)'}
+              </span>
+            )}
           </div>
 
           {/* Optional Google Sign-In & Log Out */}
           {!currentUser || currentUser.isAnonymous ? (
             <button
               onClick={handleGoogleLogin}
-              className="px-4 py-2.5 rounded-xl bg-white border-2 border-tunisian-gold hover:border-tunisian-blue text-xs font-bold text-tunisian-dark-blue flex items-center gap-2 shadow-sm transition-all shrink-0 hover:scale-105"
+              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500/10 to-tunisian-gold/20 border-2 border-tunisian-gold hover:border-tunisian-blue text-xs font-black text-tunisian-dark-blue flex items-center gap-2 shadow-sm transition-all shrink-0 hover:scale-105"
             >
-              <LogIn size={14} className="text-tunisian-blue" />
-              <span>{t.signInWithGoogle || 'Sign in with Google'}</span>
+              <LogIn size={15} className="text-tunisian-blue shrink-0" />
+              <div className="text-left">
+                <div>{t.signInWithGoogle || 'Sign in with Google'}</div>
+                <div className="text-[9px] text-tunisian-dark-blue/60 font-semibold">{t.saveStatsPrompt || 'Save your record permanently'}</div>
+              </div>
             </button>
           ) : (
             <div className="flex items-center gap-2 shrink-0">
@@ -387,6 +421,22 @@ export const MultiplayerView: React.FC<MultiplayerViewProps> = ({
           )}
         </div>
       </div>
+
+      {/* Guest Mode Informational Banner */}
+      {(!currentUser || currentUser.isAnonymous) && (
+        <div className="mb-8 px-4 py-2.5 bg-amber-50/90 border border-amber-200/80 rounded-2xl text-xs text-amber-900 font-bold flex items-center justify-between gap-3 shadow-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-base">🎮</span>
+            <span>{t.guestModeNotice}</span>
+          </div>
+          <button
+            onClick={handleGoogleLogin}
+            className="shrink-0 underline text-tunisian-blue hover:text-tunisian-dark-blue text-xs font-black cursor-pointer"
+          >
+            {t.signInWithGoogle} →
+          </button>
+        </div>
+      )}
 
       {/* Main Container */}
       <div className="bg-white/90 backdrop-blur-md rounded-[2.5rem] border-8 border-tunisian-gold shadow-2xl p-6 sm:p-8 relative">
@@ -427,25 +477,36 @@ export const MultiplayerView: React.FC<MultiplayerViewProps> = ({
 
               {/* Lobbies List */}
               <div className="space-y-4 max-h-[480px] overflow-y-auto pr-1">
-                {loading ? (
-                  <div className="flex flex-col items-center justify-center py-20 text-tunisian-dark-blue/40">
-                    <RefreshCw size={40} className="animate-spin mb-3 text-tunisian-gold" />
-                    <span className="font-bold">Gathering open halls in the Medina...</span>
-                  </div>
-                ) : lobbies.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-20 text-center text-tunisian-dark-blue/40 border-4 border-dashed border-tunisian-gold/30 rounded-3xl p-8">
-                    <Users size={56} className="mb-3 text-tunisian-gold/60" />
-                    <p className="text-lg font-bold text-tunisian-dark-blue/70 mb-2">{t.noLobbies}</p>
-                    <button
-                      onClick={() => setView('create')}
-                      className="mt-2 px-6 py-2.5 rounded-xl bg-tunisian-blue text-white font-bold text-sm hover:bg-tunisian-dark-blue transition-all"
-                    >
-                      {t.createLobby}
-                    </button>
-                  </div>
-                ) : (
-                  lobbies.map((lobby) => {
+                {(() => {
+                  const activeLobbies = lobbies.filter(l => !isLobbyInactive(l));
+
+                  if (loading) {
+                    return (
+                      <div className="flex flex-col items-center justify-center py-20 text-tunisian-dark-blue/40">
+                        <RefreshCw size={40} className="animate-spin mb-3 text-tunisian-gold" />
+                        <span className="font-bold">Gathering open halls in the Medina...</span>
+                      </div>
+                    );
+                  }
+
+                  if (activeLobbies.length === 0) {
+                    return (
+                      <div className="flex flex-col items-center justify-center py-20 text-center text-tunisian-dark-blue/40 border-4 border-dashed border-tunisian-gold/30 rounded-3xl p-8">
+                        <Users size={56} className="mb-3 text-tunisian-gold/60" />
+                        <p className="text-lg font-bold text-tunisian-dark-blue/70 mb-2">{t.noLobbies}</p>
+                        <button
+                          onClick={() => setView('create')}
+                          className="mt-2 px-6 py-2.5 rounded-xl bg-tunisian-blue text-white font-bold text-sm hover:bg-tunisian-dark-blue transition-all"
+                        >
+                          {t.createLobby}
+                        </button>
+                      </div>
+                    );
+                  }
+
+                  return activeLobbies.map((lobby) => {
                     const variant = GAME_VARIANTS[lobby.mode] || GAME_VARIANTS.sabouiya_standard;
+
                     return (
                       <div 
                         key={lobby.id}
@@ -473,6 +534,10 @@ export const MultiplayerView: React.FC<MultiplayerViewProps> = ({
                                   <Lock size={12} /> 5-PIN
                                 </span>
                               )}
+                              <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md font-bold bg-green-50 text-green-800 border border-green-200">
+                                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                                <span>Live</span>
+                              </span>
                             </div>
                             
                             <div className="flex flex-wrap items-center gap-3 text-xs text-tunisian-dark-blue/60 font-semibold mt-1">
@@ -499,8 +564,8 @@ export const MultiplayerView: React.FC<MultiplayerViewProps> = ({
                         </button>
                       </div>
                     );
-                  })
-                )}
+                  });
+                })()}
               </div>
             </motion.div>
           )}
@@ -640,7 +705,13 @@ export const MultiplayerView: React.FC<MultiplayerViewProps> = ({
                 </div>
               )}
 
-              <div className="pt-4">
+              {/* 10-Minute Timeout Info */}
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2.5 text-xs text-amber-900 font-bold">
+                <Clock size={16} className="text-amber-700 shrink-0" />
+                <span>{t.hallTimeoutWarning || 'Halls automatically close after 10 minutes'}</span>
+              </div>
+
+              <div className="pt-2">
                 <button 
                   onClick={handleCreateLobby}
                   className="w-full py-5 rounded-2xl bg-gradient-to-r from-tunisian-red to-tunisian-dark-blue text-white text-xl font-black shadow-xl hover:shadow-2xl hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-3"
