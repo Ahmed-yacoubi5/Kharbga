@@ -5,13 +5,25 @@
       "description": "Represents an online game lobby and its active state",
       "type": "object",
       "properties": {
-        "name": { "type": "string" },
-        "mode": { "type": "string", "enum": ["classic", "khamoussiya", "sabouiya"] },
+        "name": { "type": "string", "maxLength": 50 },
+        "mode": { 
+          "type": "string", 
+          "enum": [
+            "thalouthiya", 
+            "tleisha", 
+            "tasha", 
+            "khamoussiya_jump", 
+            "khamoussiya_encircle", 
+            "sadousiya", 
+            "sabouiya_standard", 
+            "sabouiya_guettar"
+          ] 
+        },
         "status": { "type": "string", "enum": ["waiting", "playing", "finished"] },
         "isPublic": { "type": "boolean" },
-        "pin": { "type": "string" },
+        "pin": { "type": "string", "maxLength": 5, "pattern": "^[0-9]{5}$" },
         "hostId": { "type": "string" },
-        "hostName": { "type": "string" },
+        "hostName": { "type": "string", "maxLength": 50 },
         "players": {
           "type": "object",
           "description": "Map of UID to player info"
@@ -23,6 +35,7 @@
         "piecesLeftToPlace": { "type": "object" },
         "moveCount": { "type": "integer" },
         "winner": { "type": "integer" },
+        "forfeitBy": { "type": "string" },
         "lastMoveAt": { "type": "string", "format": "date-time" },
         "reconnectUntil": { "type": "string", "format": "date-time" },
         "createdAt": { "type": "string", "format": "date-time" }
@@ -31,11 +44,16 @@
     },
     "UserProfile": {
       "title": "User Profile",
-      "description": "Public profile info for a user",
+      "description": "Public profile info and multiplayer win/loss statistics",
       "type": "object",
       "properties": {
-        "nickname": { "type": "string" },
-        "lastSeen": { "type": "string", "format": "date-time" }
+        "nickname": { "type": "string", "maxLength": 50 },
+        "wins": { "type": "integer" },
+        "losses": { "type": "integer" },
+        "draws": { "type": "integer" },
+        "totalGames": { "type": "integer" },
+        "lastSeen": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["nickname"]
     }
@@ -47,7 +65,7 @@
     },
     "/users/{userId}": {
       "schema": "UserProfile",
-      "description": "User profile data"
+      "description": "User profile data and multiplayer stats"
     }
   }
 }

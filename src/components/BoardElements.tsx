@@ -81,19 +81,10 @@ export const PlayerPieceIcon: React.FC<{ player: Player; appearance?: 'seashell'
   if (isDefault) {
     return (
       <div 
-        className={`${className || 'w-6 h-6'} rounded-full border-2 flex items-center justify-center relative shadow`}
-        style={{
-          aspectRatio: '1',
-          background: isP1 
-            ? 'radial-gradient(circle at 35% 35%, #FFFFFF 0%, #E5E9F0 60%, #C8D1E0 100%)' 
-            : 'radial-gradient(circle at 35% 35%, #FF7F50 0%, #C1440E 70%, #8B2500 100%)',
-          borderColor: isP1 ? '#1B4FBF' : '#F5F0E8',
-          boxShadow: isP1 
-            ? '0 2px 4px rgba(0,0,0,0.15), inset 0 1px 2px rgba(27, 79, 191, 0.25)' 
-            : '0 2px 4px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255, 255, 255, 0.35)',
-        }}
+        className={`${className || 'w-6 h-6'} rounded-full border-2 flex items-center justify-center relative shadow ${isP1 ? 'ceramic-piece-p1' : 'ceramic-piece-p2'}`}
+        style={{ aspectRatio: '1' }}
       >
-        <div className={`w-2/3 h-2/3 rounded-full border opacity-30 scale-75 ${isP1 ? 'border-1B4FBF' : 'border-white'}`} style={{ borderColor: isP1 ? '#1B4FBF' : '#FFFFFF' }} />
+        <div className="w-2/3 h-2/3 rounded-full border opacity-40 scale-75" />
       </div>
     );
   }

@@ -79,6 +79,37 @@ body {
   font-family: var(--font-serif);
 }
 
+/* Carved Stone or Painted Ceramic Discs for game pieces (Base / Default Theme) */
+.ceramic-piece-p1 {
+  background: radial-gradient(circle at 35% 35%, #FFFFFF 0%, #E8EEF5 60%, #C4D3E8 100%) !important;
+  border-color: #1A5276 !important;
+  box-shadow: 
+    0 8px 16px -2px rgba(0, 0, 0, 0.25), 
+    inset 0 3px 5px rgba(26, 82, 118, 0.3),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.15) !important;
+}
+
+.ceramic-piece-p2 {
+  background: radial-gradient(circle at 35% 35%, #FF7F50 0%, #C0392B 70%, #78281F 100%) !important;
+  border-color: #FAF0DC !important;
+  box-shadow: 
+    0 8px 16px -2px rgba(0, 0, 0, 0.3), 
+    inset 0 3px 5px rgba(255, 255, 255, 0.4),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.35) !important;
+}
+
+.ceramic-piece-p1 > div {
+  border-color: #1A5276 !important;
+  opacity: 0.5 !important;
+  border-style: solid !important;
+}
+
+.ceramic-piece-p2 > div {
+  border-color: #FFFFFF !important;
+  opacity: 0.6 !important;
+  border-style: solid !important;
+}
+
 /* ==========================================
    TUNISIAN MAKE-OVER THEME (Cobalt & Terracotta)
    ========================================== */

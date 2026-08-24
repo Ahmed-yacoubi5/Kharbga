@@ -14,15 +14,19 @@ import { ZelligeBackground } from './components/ZelligeBackground';
 import { Menu } from './components/Menu';
 import { GameView } from './components/GameView';
 import { ModeSelection } from './components/ModeSelection';
-import { Language, Difficulty, GameMode } from './types';
+import { MultiplayerView } from './components/MultiplayerView';
+import { OnlineLobbyRoom } from './components/OnlineLobbyRoom';
+import { OnlineGameView } from './components/OnlineGameView';
+import { Language, Difficulty, GameMode, LobbyData } from './types';
 import { SoundManager } from './services/soundService';
 import { RulesPage } from './components/RulesPage';
 
 import { MusicTrack, MUSIC_TRACKS } from './constants';
 
 export default function App() {
-  const [view, setView] = useState<'home' | 'modeSelection' | 'game' | 'rules'>('home');
+  const [view, setView] = useState<'home' | 'modeSelection' | 'game' | 'rules' | 'multiplayer' | 'onlineLobby' | 'onlineGame'>('home');
   const [rulesInitialVariant, setRulesInitialVariant] = useState<GameMode | undefined>();
+  const [activeLobby, setActiveLobby] = useState<LobbyData | null>(null);
   const [isVsAI, setIsVsAI] = useState(true);
   const [language, setLanguage] = useState<Language>('ar');
   const [difficulty, setDifficulty] = useState<Difficulty>('hard');
@@ -103,6 +107,7 @@ export default function App() {
               language={language}
               onLanguageChange={setLanguage}
               onStart={() => setView('modeSelection')}
+              onMultiplayerSelect={() => setView('multiplayer')}
               onRulesSelect={() => setView('rules')}
               soundEnabled={soundEnabled}
               onSoundToggle={handleSoundToggle}
@@ -112,6 +117,70 @@ export default function App() {
               onTrackSelect={setCurrentTrack}
               pieceAppearance={pieceAppearance}
               onPieceAppearanceChange={handlePieceAppearanceChange}
+            />
+          </motion.div>
+        )}
+
+        {view === 'multiplayer' && (
+          <motion.div
+            key="multiplayer"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -30 }}
+            className="relative z-10 w-full h-full flex items-center justify-center min-h-screen"
+          >
+            <MultiplayerView
+              language={language}
+              pieceAppearance={pieceAppearance}
+              onBack={() => setView('home')}
+              onJoinLobby={(lobby) => {
+                setActiveLobby(lobby);
+                setView('onlineLobby');
+              }}
+            />
+          </motion.div>
+        )}
+
+        {view === 'onlineLobby' && activeLobby && (
+          <motion.div
+            key="onlineLobby"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            className="relative z-10 w-full h-full flex items-center justify-center min-h-screen"
+          >
+            <OnlineLobbyRoom
+              language={language}
+              lobbyId={activeLobby.id}
+              onStartGame={() => setView('onlineGame')}
+              onBack={() => {
+                setActiveLobby(null);
+                setView('multiplayer');
+              }}
+            />
+          </motion.div>
+        )}
+
+        {view === 'onlineGame' && activeLobby && (
+          <motion.div
+            key="onlineGame"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="relative z-10 w-full h-full"
+          >
+            <OnlineGameView
+              lobby={activeLobby}
+              language={language}
+              pieceAppearance={pieceAppearance}
+              onShowRules={(mode) => {
+                setRulesInitialVariant(mode);
+                setView('rules');
+              }}
+              onBack={() => {
+                setActiveLobby(null);
+                setView('multiplayer');
+              }}
             />
           </motion.div>
         )}

@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, onAuthStateChanged, User, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, User, GoogleAuthProvider, signInWithPopup, signInAnonymously } from 'firebase/auth';
 import { getFirestore, enableMultiTabIndexedDbPersistence } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
@@ -84,16 +84,24 @@ export const loginWithGoogle = async (): Promise<User> => {
   }
 };
 
-export const ensureAuth = (): Promise<User> => {
-  return new Promise((resolve, reject) => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      unsubscribe();
-      if (user) {
-        resolve(user);
-      } else {
-        // We no longer automatically sign in anonymously as it might be disabled
-        reject(new Error("Not authenticated"));
-      }
+export const ensureAuth = async (): Promise<User> => {
+  if (auth.currentUser) return auth.currentUser;
+  
+  try {
+    const cred = await signInAnonymously(auth);
+    return cred.user;
+  } catch (anonErr) {
+    // If anonymous sign-in is disabled, wait for active user auth state
+    return new Promise((resolve, reject) => {
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        unsubscribe();
+        if (user) {
+          resolve(user);
+        } else {
+          reject(new Error("Please sign in with Google to enter multiplayer."));
+        }
+      });
     });
-  });
+  }
 };
+

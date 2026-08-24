@@ -11,6 +11,7 @@ interface MenuProps {
   language: Language;
   onLanguageChange: (lang: Language) => void;
   onStart: () => void;
+  onMultiplayerSelect: () => void;
   onRulesSelect: () => void;
   soundEnabled: boolean;
   onSoundToggle: () => void;
@@ -23,7 +24,7 @@ interface MenuProps {
 }
 
 export const Menu: React.FC<MenuProps> = ({ 
-  language, onLanguageChange, onStart, onRulesSelect,
+  language, onLanguageChange, onStart, onMultiplayerSelect, onRulesSelect,
   soundEnabled, onSoundToggle, musicEnabled, onMusicToggle,
   currentTrackId, onTrackSelect, pieceAppearance, onPieceAppearanceChange
 }) => {
@@ -35,7 +36,7 @@ export const Menu: React.FC<MenuProps> = ({
       <motion.div 
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="relative mb-16 flex flex-col items-center"
+        className="relative mb-14 flex flex-col items-center"
       >
         <div className="flex items-center gap-4 md:gap-8 relative z-10">
           <h1 
@@ -53,29 +54,40 @@ export const Menu: React.FC<MenuProps> = ({
         </div>
       </motion.div>
 
-      <div className="max-w-md w-full flex flex-col gap-8">
-        {/* Play Button */}
+      <div className="max-w-md w-full flex flex-col gap-5">
+        {/* Play Offline / Mode Selection Button */}
         <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
           onClick={onStart}
-          className="w-full py-6 rounded-3xl bg-tunisian-blue text-white text-3xl font-bold shadow-2xl hover:bg-tunisian-dark-blue transition-all border-b-8 border-black/20"
+          className="w-full py-5 rounded-3xl bg-tunisian-blue text-white text-2xl md:text-3xl font-black shadow-2xl hover:bg-tunisian-dark-blue transition-all border-b-8 border-black/20"
         >
           {t.start}
         </motion.button>
 
-        {/* Rules Button - Now navigates to Rules Page */}
+        {/* Play Online / Multiplayer Button */}
         <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onRulesSelect}
-          className="w-full py-4 rounded-2xl bg-tunisian-gold text-tunisian-dark-blue text-xl font-bold shadow-lg hover:brightness-110 transition-all border-b-4 border-black/10 flex items-center justify-center gap-3"
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={onMultiplayerSelect}
+          className="w-full py-5 rounded-3xl bg-gradient-to-r from-tunisian-red via-red-600 to-tunisian-dark-blue text-white text-xl md:text-2xl font-black shadow-2xl hover:brightness-110 transition-all border-b-8 border-black/20 flex items-center justify-center gap-3"
         >
-          <Info size={24} /> {t.rules}
+          <span className="text-2xl">🌐</span>
+          <span>{t.onlineMultiplayer || t.playOnline}</span>
+        </motion.button>
+
+        {/* Rules Button - Navigates to Rules Page */}
+        <motion.button
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={onRulesSelect}
+          className="w-full py-4 rounded-2xl bg-tunisian-gold text-tunisian-dark-blue text-lg font-black shadow-lg hover:brightness-110 transition-all border-b-4 border-black/10 flex items-center justify-center gap-3"
+        >
+          <Info size={22} /> {t.rules}
         </motion.button>
 
         {/* Quick Settings Grid */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3 mt-2">
           {/* Language Toggle */}
           <div className="bg-white/80 backdrop-blur-sm p-4 rounded-2xl border-2 border-tunisian-gold flex flex-col items-center gap-2">
             <label className="text-xs font-bold text-tunisian-dark-blue opacity-60 uppercase flex items-center gap-1">

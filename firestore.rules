@@ -15,13 +15,13 @@ service cloud.firestore {
     function existing() { return resource.data; }
 
     function isValidLobby(data) {
-      return data.name is string && data.name.size() > 0 && data.name.size() <= 50
-        && data.mode in ['classic', 'khamoussiya', 'sabouiya']
+      return data.name is string && data.name.size() > 0 && data.name.size() <= 60
+        && data.mode in ['thalouthiya', 'tleisha', 'tasha', 'khamoussiya_jump', 'khamoussiya_encircle', 'sadousiya', 'sabouiya_standard', 'sabouiya_guettar']
         && data.status in ['waiting', 'playing', 'finished']
         && data.playerCount is int && data.playerCount >= 1 && data.playerCount <= 2
         && data.hostId == request.auth.uid
         && data.players.keys().hasAll([request.auth.uid])
-        && (data.isPublic == true || (data.pin is string && data.pin.size() == 4));
+        && (data.isPublic == true || (data.pin is string && data.pin.size() == 5 && data.pin.matches('^[0-9]{5}$')));
     }
 
     // 1. Lobbies Collection
@@ -52,24 +52,22 @@ service cloud.firestore {
         // Action: Move / Game Sync
         (existing().status == 'playing' 
          && (existing().players.keys().hasAll([request.auth.uid]))
-         // We allow the current player to update the board state
-         // In a production app, we'd validate moves more strictly, but here we trust the logic
-         && incoming().diff(existing()).affectedKeys().hasAny(['board', 'currentPlayer', 'phase', 'piecesLeftToPlace', 'moveCount', 'winner', 'status', 'lastMoveAt', 'reconnectUntil']))
+         && incoming().diff(existing()).affectedKeys().hasAny(['board', 'currentPlayer', 'phase', 'piecesLeftToPlace', 'moveCount', 'winner', 'status', 'lastMoveAt', 'forfeitBy', 'reconnectUntil']))
         ||
         // Action: Leave/Disconnect
         (incoming().playerCount < existing().playerCount 
          && incoming().diff(existing()).affectedKeys().hasOnly(['playerCount', 'players.' + request.auth.uid]))
       );
 
-      allow delete: if isVerified() && existing().hostId == request.auth.uid && existing().status == 'waiting';
+      allow delete: if isVerified() && (existing().hostId == request.auth.uid || existing().status == 'finished');
     }
 
     // 2. Users Collection
     match /users/{userId} {
       allow get: if isVerified();
       allow create, update: if isVerified() && request.auth.uid == userId 
-        && incoming().nickname is string && incoming().nickname.size() <= 30
-        && incoming().lastSeen == request.time;
+        && incoming().nickname is string && incoming().nickname.size() <= 50;
     }
   }
 }
+
