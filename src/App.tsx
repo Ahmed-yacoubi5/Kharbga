@@ -21,6 +21,7 @@ import { Language, Difficulty, GameMode, LobbyData } from './types';
 import { SoundManager } from './services/soundService';
 import { RulesPage } from './components/RulesPage';
 import { CreditsPage } from './components/CreditsPage';
+import { IntroSplash } from './components/IntroSplash';
 import { InactivityService } from './services/inactivityService';
 
 import { MusicTrack, MUSIC_TRACKS } from './constants';
@@ -30,6 +31,7 @@ export default function App() {
   useEffect(() => {
     InactivityService.init();
   }, []);
+  const [showIntro, setShowIntro] = useState(true);
   const [view, setView] = useState<'home' | 'modeSelection' | 'game' | 'rules' | 'credits' | 'multiplayer' | 'onlineLobby' | 'onlineGame'>('home');
   const [rulesReturnView, setRulesReturnView] = useState<'home' | 'modeSelection' | 'game' | 'onlineGame'>('home');
   const [rulesInitialVariant, setRulesInitialVariant] = useState<GameMode | undefined>();
@@ -85,52 +87,66 @@ export default function App() {
     >
       <ZelligeBackground isTunisian={isTunisianTheme} />
 
-      {/* Theme Toggle Button */}
-      <button 
-        onClick={() => setIsTunisianTheme(!isTunisianTheme)}
-        className="fixed top-4 right-4 z-50 px-4 py-2.5 rounded-full font-serif font-black border-2 shadow-lg transition-all flex items-center gap-2 text-sm bg-white hover:scale-105 active:scale-95 duration-200"
-        style={{
-          borderColor: isTunisianTheme ? '#2E6FD4' : '#C0392B',
-          color: isTunisianTheme ? '#1B4FBF' : '#154360'
-        }}
-        title="Toggle Tunisian Style / Default Theme"
-      >
-        <span className="text-base">🇹🇳</span>
-        <span className="hidden sm:inline">{isTunisianTheme ? 'النمط التونسي' : 'النمط الأصلي'}</span>
-        <span className="hidden sm:inline opacity-30">/</span>
-        <span className="text-xs uppercase font-sans tracking-wider font-semibold">{isTunisianTheme ? 'Tunisian' : 'Default'}</span>
-      </button>
-      
       <AnimatePresence mode="wait">
-        {view === 'home' && (
+        {showIntro ? (
+          <IntroSplash key="intro-splash" onFinish={() => setShowIntro(false)} />
+        ) : (
           <motion.div
-            key="home"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.1 }}
-            className="relative z-10 w-full h-full flex items-center justify-center min-h-screen"
+            key="main-app-container"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
+            className="relative w-full min-h-screen"
           >
-            <Menu 
-              language={language}
-              onLanguageChange={setLanguage}
-              onStart={() => setView('modeSelection')}
-              onMultiplayerSelect={() => setView('multiplayer')}
-              onRulesSelect={() => {
-                setRulesReturnView('home');
-                setView('rules');
+            {/* Theme Toggle Button */}
+            <button 
+              onClick={() => setIsTunisianTheme(!isTunisianTheme)}
+              className="fixed top-4 right-4 z-50 px-4 py-2.5 rounded-full font-serif font-black border-2 shadow-lg transition-all flex items-center gap-2 text-sm bg-white hover:scale-105 active:scale-95 duration-200"
+              style={{
+                borderColor: isTunisianTheme ? '#2E6FD4' : '#C0392B',
+                color: isTunisianTheme ? '#1B4FBF' : '#154360'
               }}
-              onCreditsSelect={() => setView('credits')}
-              soundEnabled={soundEnabled}
-              onSoundToggle={handleSoundToggle}
-              musicEnabled={musicEnabled}
-              onMusicToggle={() => setMusicEnabled(!musicEnabled)}
-              currentTrackId={currentTrack.id}
-              onTrackSelect={setCurrentTrack}
-              pieceAppearance={pieceAppearance}
-              onPieceAppearanceChange={handlePieceAppearanceChange}
-            />
-          </motion.div>
-        )}
+              title="Toggle Tunisian Style / Default Theme"
+            >
+              <span className="text-base">🇹🇳</span>
+              <span className="hidden sm:inline">{isTunisianTheme ? 'النمط التونسي' : 'النمط الأصلي'}</span>
+              <span className="hidden sm:inline opacity-30">/</span>
+              <span className="text-xs uppercase font-sans tracking-wider font-semibold">{isTunisianTheme ? 'Tunisian' : 'Default'}</span>
+            </button>
+            
+            <AnimatePresence mode="wait">
+              {view === 'home' && (
+                <motion.div
+                  key="home"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.05 }}
+                  transition={{ duration: 0.4 }}
+                  className="relative z-10 w-full h-full flex items-center justify-center min-h-screen"
+                >
+                  <Menu 
+                    language={language}
+                    onLanguageChange={setLanguage}
+                    onStart={() => setView('modeSelection')}
+                    onMultiplayerSelect={() => setView('multiplayer')}
+                    onRulesSelect={() => {
+                      setRulesReturnView('home');
+                      setView('rules');
+                    }}
+                    onCreditsSelect={() => setView('credits')}
+                    onReplayIntro={() => setShowIntro(true)}
+                    soundEnabled={soundEnabled}
+                    onSoundToggle={handleSoundToggle}
+                    musicEnabled={musicEnabled}
+                    onMusicToggle={() => setMusicEnabled(!musicEnabled)}
+                    currentTrackId={currentTrack.id}
+                    onTrackSelect={setCurrentTrack}
+                    pieceAppearance={pieceAppearance}
+                    onPieceAppearanceChange={handlePieceAppearanceChange}
+                  />
+                </motion.div>
+              )}
 
         {view === 'credits' && (
           <motion.div
@@ -274,6 +290,9 @@ export default function App() {
               }}
               onBack={() => setView('modeSelection')}
             />
+          </motion.div>
+        )}
+            </AnimatePresence>
           </motion.div>
         )}
       </AnimatePresence>

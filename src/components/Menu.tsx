@@ -14,6 +14,7 @@ interface MenuProps {
   onMultiplayerSelect: () => void;
   onRulesSelect: () => void;
   onCreditsSelect: () => void;
+  onReplayIntro?: () => void;
   soundEnabled: boolean;
   onSoundToggle: () => void;
   musicEnabled: boolean;
@@ -25,7 +26,7 @@ interface MenuProps {
 }
 
 export const Menu: React.FC<MenuProps> = ({ 
-  language, onLanguageChange, onStart, onMultiplayerSelect, onRulesSelect, onCreditsSelect,
+  language, onLanguageChange, onStart, onMultiplayerSelect, onRulesSelect, onCreditsSelect, onReplayIntro,
   soundEnabled, onSoundToggle, musicEnabled, onMusicToggle,
   currentTrackId, onTrackSelect, pieceAppearance, onPieceAppearanceChange
 }) => {
@@ -43,16 +44,27 @@ export const Menu: React.FC<MenuProps> = ({
           <h1 
             id="menu-title-heading"
             style={{ fontFamily: "'Comic Neue', sans-serif", fontSize: '97px', lineHeight: '97px', fontWeight: 'bold', fontStyle: 'normal' }}
-            className="text-tunisian-red drop-shadow-2xl mb-4 relative z-10 transition-all"
+            className="text-tunisian-red drop-shadow-2xl mb-4 relative z-10 transition-all cursor-pointer hover:scale-102"
+            onClick={onReplayIntro}
+            title="Click to replay intro animation"
           >
             {t.title}
           </h1>
         </div>
-        <div className="p-2 px-8 bg-tunisian-gold rounded-full shadow-lg relative z-10 w-fit">
+        <motion.button 
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={onReplayIntro}
+          className="p-2 px-8 bg-tunisian-gold hover:bg-amber-600 rounded-full shadow-lg relative z-10 w-fit transition-all cursor-pointer flex items-center gap-2 group"
+          title="Replay intro animation / إعادة العرض التقديمي"
+        >
           <span className="text-[24px] leading-[24px] font-bold text-white tracking-widest uppercase">
             {t.subtitle}
           </span>
-        </div>
+          <span className="text-xs text-white/70 group-hover:text-white transition-colors">
+            ▶
+          </span>
+        </motion.button>
       </motion.div>
 
       <div className="max-w-md w-full flex flex-col gap-5">
