@@ -20,6 +20,7 @@ import { OnlineGameView } from './components/OnlineGameView';
 import { Language, Difficulty, GameMode, LobbyData } from './types';
 import { SoundManager } from './services/soundService';
 import { RulesPage } from './components/RulesPage';
+import { CreditsPage } from './components/CreditsPage';
 import { InactivityService } from './services/inactivityService';
 
 import { MusicTrack, MUSIC_TRACKS } from './constants';
@@ -29,7 +30,8 @@ export default function App() {
   useEffect(() => {
     InactivityService.init();
   }, []);
-  const [view, setView] = useState<'home' | 'modeSelection' | 'game' | 'rules' | 'multiplayer' | 'onlineLobby' | 'onlineGame'>('home');
+  const [view, setView] = useState<'home' | 'modeSelection' | 'game' | 'rules' | 'credits' | 'multiplayer' | 'onlineLobby' | 'onlineGame'>('home');
+  const [rulesReturnView, setRulesReturnView] = useState<'home' | 'modeSelection' | 'game' | 'onlineGame'>('home');
   const [rulesInitialVariant, setRulesInitialVariant] = useState<GameMode | undefined>();
   const [activeLobby, setActiveLobby] = useState<LobbyData | null>(null);
   const [isVsAI, setIsVsAI] = useState(true);
@@ -113,7 +115,11 @@ export default function App() {
               onLanguageChange={setLanguage}
               onStart={() => setView('modeSelection')}
               onMultiplayerSelect={() => setView('multiplayer')}
-              onRulesSelect={() => setView('rules')}
+              onRulesSelect={() => {
+                setRulesReturnView('home');
+                setView('rules');
+              }}
+              onCreditsSelect={() => setView('credits')}
               soundEnabled={soundEnabled}
               onSoundToggle={handleSoundToggle}
               musicEnabled={musicEnabled}
@@ -122,6 +128,21 @@ export default function App() {
               onTrackSelect={setCurrentTrack}
               pieceAppearance={pieceAppearance}
               onPieceAppearanceChange={handlePieceAppearanceChange}
+            />
+          </motion.div>
+        )}
+
+        {view === 'credits' && (
+          <motion.div
+            key="credits"
+            initial={{ opacity: 0, scale: 1.05 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="relative z-10 w-full h-full"
+          >
+            <CreditsPage 
+              language={language}
+              onBack={() => setView('home')}
             />
           </motion.div>
         )}
@@ -180,6 +201,7 @@ export default function App() {
               pieceAppearance={pieceAppearance}
               onShowRules={(mode) => {
                 setRulesInitialVariant(mode);
+                setRulesReturnView('onlineGame');
                 setView('rules');
               }}
               onBack={() => {
@@ -207,6 +229,7 @@ export default function App() {
               }}
               onRulesSelect={(mode) => {
                 setRulesInitialVariant(mode);
+                setRulesReturnView('modeSelection');
                 setView('rules');
               }}
               onBack={() => setView('home')}
@@ -225,7 +248,7 @@ export default function App() {
             <RulesPage 
               language={language}
               initialVariant={rulesInitialVariant}
-              onBack={() => setView('modeSelection')}
+              onBack={() => setView(rulesReturnView)}
             />
           </motion.div>
         )}
@@ -246,6 +269,7 @@ export default function App() {
               pieceAppearance={pieceAppearance}
               onShowRules={(mode) => {
                 setRulesInitialVariant(mode);
+                setRulesReturnView('game');
                 setView('rules');
               }}
               onBack={() => setView('modeSelection')}

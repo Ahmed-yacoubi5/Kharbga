@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Language, TRANSLATIONS } from '../types';
-import { Globe, Volume2, Music as MusicIcon, Info, X } from 'lucide-react';
+import { Globe, Volume2, Music as MusicIcon, Info, ShieldCheck, X } from 'lucide-react';
 import { MusicSelector } from './MusicSelector';
 import { MusicTrack } from '../constants';
 
@@ -13,6 +13,7 @@ interface MenuProps {
   onStart: () => void;
   onMultiplayerSelect: () => void;
   onRulesSelect: () => void;
+  onCreditsSelect: () => void;
   soundEnabled: boolean;
   onSoundToggle: () => void;
   musicEnabled: boolean;
@@ -24,7 +25,7 @@ interface MenuProps {
 }
 
 export const Menu: React.FC<MenuProps> = ({ 
-  language, onLanguageChange, onStart, onMultiplayerSelect, onRulesSelect,
+  language, onLanguageChange, onStart, onMultiplayerSelect, onRulesSelect, onCreditsSelect,
   soundEnabled, onSoundToggle, musicEnabled, onMusicToggle,
   currentTrackId, onTrackSelect, pieceAppearance, onPieceAppearanceChange
 }) => {
@@ -84,6 +85,18 @@ export const Menu: React.FC<MenuProps> = ({
           className="w-full py-4 rounded-2xl bg-tunisian-gold text-tunisian-dark-blue text-lg font-black shadow-lg hover:brightness-110 transition-all border-b-4 border-black/10 flex items-center justify-center gap-3"
         >
           <Info size={22} /> {t.rules}
+        </motion.button>
+
+        {/* Credits & Copyright Button */}
+        <motion.button
+          id="btn-credits-copyright"
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={onCreditsSelect}
+          className="w-full py-3.5 rounded-2xl bg-white/90 hover:bg-white text-tunisian-dark-blue text-base md:text-lg font-black shadow-md hover:shadow-lg transition-all border-2 border-tunisian-gold/70 flex items-center justify-center gap-2.5"
+        >
+          <ShieldCheck size={22} className="text-tunisian-red shrink-0" />
+          <span>{t.creditsAndCopyright}</span>
         </motion.button>
 
         {/* Quick Settings Grid */}

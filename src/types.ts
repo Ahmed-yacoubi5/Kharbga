@@ -165,6 +165,12 @@ export const TRANSLATIONS = {
     hallTimeoutWarning: "Inactive halls with no active players are automatically deleted after 10 minutes",
     hallExpired: "Hall deleted: 10 minutes of player inactivity",
     expiresIn: "Inactive in",
+    creditsAndCopyright: "Credits & Copyright",
+    aboutGame: "About the game",
+    sourcesAndAck: "Sources & Acknowledgements",
+    credits: "Credits",
+    copyright: "Copyright",
+    contact: "Contact",
   },
   fr: {
     title: "KHARBGA",
@@ -260,6 +266,12 @@ export const TRANSLATIONS = {
     hallTimeoutWarning: "Les salons inactifs sans joueurs sont automatiquement supprimés après 10 minutes",
     hallExpired: "Salon supprimé : 10 minutes d'inactivité des joueurs",
     expiresIn: "Inactif dans",
+    creditsAndCopyright: "Crédits et Droits d'auteur",
+    aboutGame: "À propos du jeu",
+    sourcesAndAck: "Sources et Remerciements",
+    credits: "Crédits",
+    copyright: "Droits d'auteur",
+    contact: "Contact",
   },
   ar: {
     title: "الخربڨة",
@@ -355,5 +367,11 @@ export const TRANSLATIONS = {
     hallTimeoutWarning: "تُحذف القاعات غير النشطة والمهجورة تلقائياً بعد 10 دقائق من غياب اللاعبين",
     hallExpired: "أُغلقت القاعة: 10 دقائق من غياب اللاعبين",
     expiresIn: "مهلة الخمول",
+    creditsAndCopyright: "الحقوق وفريق العمل",
+    aboutGame: "عن اللعبة",
+    sourcesAndAck: "المصادر والشكر والتقدير",
+    credits: "فريق العمل",
+    copyright: "حقوق النشر والملكية",
+    contact: "التواصل والاستفسارات",
   }
 };
