@@ -95,7 +95,7 @@ export const IntroSplash: React.FC<IntroSplashProps> = ({ onFinish }) => {
             opacity: 0, 
             scale: 0.25, 
             rotate: -180, 
-            filter: 'blur(12px)' 
+            filter: 'blur(10px)' 
           }}
           animate={{ 
             opacity: 1, 
@@ -109,33 +109,16 @@ export const IntroSplash: React.FC<IntroSplashProps> = ({ onFinish }) => {
           }}
           className="relative flex items-center justify-center"
         >
-          {/* Ambient rotating warm glow behind the board */}
-          <motion.div
-            animate={{ rotate: 360, scale: [0.95, 1.05, 0.95] }}
-            transition={{ 
-              rotate: { duration: 7, repeat: Infinity, ease: 'linear' },
-              scale: { duration: 3.5, repeat: Infinity, ease: 'easeInOut' }
-            }}
-            className="absolute w-[250px] h-[250px] sm:w-[310px] sm:h-[310px] rounded-full pointer-events-none opacity-50 blur-2xl"
-            style={{
-              background: 'conic-gradient(from 0deg, rgba(212,172,13,0.6) 0%, rgba(192,57,43,0.35) 33%, rgba(26,82,118,0.45) 66%, rgba(212,172,13,0.6) 100%)'
-            }}
-          />
-
-          {/* Square Board Image with Rounded Corners & Deep Realistic Shadow */}
-          <div className="relative rounded-[2rem] sm:rounded-[2.4rem] overflow-hidden shadow-2xl shadow-black/30 border-2 border-tunisian-gold/40">
+          {/* Transparent Board Cutout - Completely seamless without any background */}
+          <div className="relative flex items-center justify-center">
             <img 
-              src="/kharbga_board.jpg"
+              src="/kharbga_board_nobg.png?v=3"
               alt="Kharbga Board"
               referrerPolicy="no-referrer"
-              onLoad={() => setImageLoaded(true)}
-              onError={(e) => {
-                const target = e.currentTarget;
-                if (!target.src.includes('kharbga_board_square')) {
-                  target.src = '/src/assets/images/kharbga_board_square_1791218388259.jpg';
-                }
+              className="w-52 h-52 sm:w-64 sm:h-64 md:w-72 md:h-72 object-contain select-none"
+              style={{
+                filter: 'drop-shadow(0 20px 24px rgba(21, 67, 96, 0.22)) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.12))'
               }}
-              className="w-48 h-48 sm:w-60 sm:h-60 md:w-64 md:h-64 object-cover select-none"
             />
           </div>
         </motion.div>
