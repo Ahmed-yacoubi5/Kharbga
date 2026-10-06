@@ -335,7 +335,7 @@ export const CreditsPage: React.FC<CreditsPageProps> = ({ language, onBack }) =>
             </div>
 
             <p className="text-base sm:text-lg text-tunisian-dark-blue font-medium mb-5">
-              Main developer: <strong className="text-tunisian-dark-blue">ahmedchihi00@gmail.com</strong> or whatsapp : <strong className="text-tunisian-dark-blue" dir="ltr">+21627861705</strong> for any feedback/enquiries
+              Main developer: <a href="mailto:ahmedchihi00@gmail.com" target="_blank" rel="noopener noreferrer" className="font-bold underline text-tunisian-dark-blue hover:text-tunisian-red transition-colors">ahmedchihi00@gmail.com</a> or whatsapp : <a href="https://wa.me/21627861705" target="_blank" rel="noopener noreferrer" className="font-bold underline text-tunisian-dark-blue hover:text-emerald-700 transition-colors" dir="ltr">+21627861705</a> for any feedback/enquiries
             </p>
 
             {/* Quick Action Badges */}
@@ -344,8 +344,10 @@ export const CreditsPage: React.FC<CreditsPageProps> = ({ language, onBack }) =>
               <div className="p-3.5 rounded-2xl bg-white border-2 border-tunisian-blue/20 hover:border-tunisian-blue flex items-center justify-between gap-3 shadow-sm transition-all">
                 <a 
                   href="mailto:ahmedchihi00@gmail.com" 
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-2.5 text-tunisian-blue hover:text-tunisian-dark-blue font-semibold text-sm truncate"
-                  title="Send an email"
+                  title="Send an email in new window"
                 >
                   <Mail size={18} className="shrink-0 text-tunisian-blue" />
                   <span className="truncate">ahmedchihi00@gmail.com</span>
