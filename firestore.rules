@@ -1,78 +1,169 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // 0. Global safety net
-    match /{document=**} {
-      allow read, write: if false;
-    }
 
-    // 3. Global Helpers
+    // Anything not matched below is denied by default.
+
+    // ---------- Helpers ----------
     function isSignedIn() { return request.auth != null; }
-    function isVerified() { return isSignedIn() && (request.auth.token.email_verified == true || request.auth.token.firebase.sign_in_provider == 'anonymous'); }
+    function isVerified() {
+      return isSignedIn() && (request.auth.token.email_verified == true
+        || request.auth.token.firebase.sign_in_provider == 'anonymous');
+    }
     function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
     function incoming() { return request.resource.data; }
     function existing() { return resource.data; }
 
-    function isValidLobby(data) {
-      return data.name is string && data.name.size() > 0 && data.name.size() <= 60
-        && data.mode in ['thalouthiya', 'tleisha', 'tasha', 'khamoussiya_jump', 'khamoussiya_encircle', 'sadousiya', 'sabouiya_standard', 'sabouiya_guettar']
-        && data.status in ['waiting', 'playing', 'finished']
-        && data.playerCount is int && data.playerCount >= 1 && data.playerCount <= 2
-        && data.hostId == request.auth.uid
-        && data.players.keys().hasAll([request.auth.uid])
-        && (data.isPublic == true || (data.pin is string && data.pin.size() == 5 && data.pin.matches('^[0-9]{5}$')));
+    function lobbyPath(lobbyId) { return /databases/$(database)/documents/lobbies/$(lobbyId); }
+
+    // A player entry that has not been nulled out by "leave".
+    function isMember(d) { return d.players.get(request.auth.uid, null) != null; }
+    // Player 1 is the host, player 2 is the guest (same convention as the client).
+    function myRole(d) { return request.auth.uid == d.hostId ? 1 : 2; }
+    function opponentRole(d) { return request.auth.uid == d.hostId ? 2 : 1; }
+
+    // The write may only touch the caller's own entry inside `players`.
+    function onlyMyPlayerEntryChanged() {
+      return incoming().players.diff(existing().players).affectedKeys().hasOnly([request.auth.uid]);
     }
 
-    // 1. Lobbies Collection
+    // Host has not shown a heartbeat for 10 minutes (abandoned lobby).
+    function hostAbandoned(d) {
+      return d.players.get(d.hostId, null) != null
+        && request.time.toMillis() > d.players[d.hostId].lastSeen + 600000;
+    }
+
+    function isValidLobby(data) {
+      return data.keys().hasOnly(['name', 'mode', 'status', 'isPublic', 'pin', 'hostId', 'hostName',
+          'playerCount', 'players', 'board', 'currentPlayer', 'phase', 'piecesLeftToPlace',
+          'moveCount', 'winner', 'createdAt'])
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 60
+        && data.mode in ['thalouthiya', 'tleisha', 'tasha', 'khamoussiya_jump', 'khamoussiya_encircle', 'sadousiya', 'sabouiya_standard', 'sabouiya_guettar']
+        && data.status == 'waiting'
+        && data.isPublic is bool
+        // The PIN must never be stored on the (world-readable) lobby document.
+        && data.get('pin', null) == null
+        && data.hostId == request.auth.uid
+        && data.hostName is string && data.hostName.size() <= 50
+        && data.playerCount == 1
+        && data.players.keys().hasOnly([request.auth.uid])
+        && data.players[request.auth.uid].isHost == true
+        && data.board is list && data.board.size() <= 100
+        && data.currentPlayer == 1
+        && data.phase in ['placement', 'movement']
+        && data.piecesLeftToPlace is map
+        && data.moveCount == 0
+        && data.winner == null;
+    }
+
+    // ---------- Lobbies ----------
     match /lobbies/{lobbyId} {
       allow list: if isVerified() && existing().status == 'waiting';
       allow get: if isVerified();
-      
-      allow create: if isVerified() 
-        && isValidId(lobbyId) 
+
+      allow create: if isVerified()
+        && isValidId(lobbyId)
         && isValidLobby(incoming())
         && incoming().createdAt == request.time;
 
       allow update: if isVerified() && (
-        // Action: Heartbeat (Any player currently in this lobby)
-        (incoming().diff(existing()).affectedKeys().hasOnly(['players']))
-        || 
-        // Action: Join (Second player joining a waiting lobby)
-        (existing().status == 'waiting' && existing().playerCount == 1 
-         && incoming().playerCount == 2 
-         && incoming().diff(existing()).affectedKeys().hasOnly(['playerCount', 'players'])
-         && (!existing().isPublic ? (incoming().pin == existing().pin) : true))
+        // Heartbeat: a member refreshes their OWN presence entry only.
+        (existing().status in ['waiting', 'playing']
+         && isMember(existing())
+         && incoming().diff(existing()).affectedKeys().hasOnly(['players'])
+         && onlyMyPlayerEntryChanged()
+         && incoming().players[request.auth.uid] != null
+         && incoming().players[request.auth.uid].name == existing().players[request.auth.uid].name
+         && incoming().players[request.auth.uid].isHost == existing().players[request.auth.uid].isHost
+         && incoming().players[request.auth.uid].lastSeen is number)
         ||
-        // Action: Start Game (Host only)
-        (existing().hostId == request.auth.uid && existing().status == 'waiting' 
+        // Join: second player enters a waiting lobby. Private lobbies require a
+        // join proof, which can only be created by someone who knows the PIN.
+        (existing().status == 'waiting' && existing().playerCount == 1
+         && existing().players.get(request.auth.uid, null) == null
+         && incoming().playerCount == 2
+         && incoming().diff(existing()).affectedKeys().hasOnly(['playerCount', 'players'])
+         && onlyMyPlayerEntryChanged()
+         && incoming().players[request.auth.uid].isHost == false
+         && incoming().players[request.auth.uid].name is string
+         && incoming().players[request.auth.uid].name.size() > 0
+         && incoming().players[request.auth.uid].name.size() <= 50
+         && incoming().players[request.auth.uid].lastSeen is number
+         && (existing().isPublic == true
+             || exists(/databases/$(database)/documents/lobbies/$(lobbyId)/joinProofs/$(request.auth.uid))))
+        ||
+        // Start game: host only.
+        (existing().hostId == request.auth.uid && existing().status == 'waiting'
          && incoming().status == 'playing' && incoming().playerCount == 2
          && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'lastMoveAt']))
         ||
-        // Action: Move / Game Sync / Forfeit
-        (existing().status == 'playing' 
-         && (existing().players.keys().hasAll([request.auth.uid]))
-         && incoming().diff(existing()).affectedKeys().hasAny(['board', 'currentPlayer', 'phase', 'piecesLeftToPlace', 'moveCount', 'winner', 'status', 'lastMoveAt', 'forfeitBy', 'reconnectUntil']))
+        // Move: only the player whose turn it is, one move at a time. Immutable
+        // fields (hostId, mode, players, ...) cannot be touched.
+        (existing().status == 'playing'
+         && isMember(existing())
+         && existing().currentPlayer == myRole(existing())
+         && incoming().diff(existing()).affectedKeys().hasOnly(['board', 'currentPlayer', 'phase', 'piecesLeftToPlace', 'moveCount', 'winner', 'status', 'lastMoveAt'])
+         && incoming().moveCount == existing().moveCount + 1
+         && incoming().board is list && incoming().board.size() == existing().board.size()
+         && incoming().currentPlayer in [1, 2]
+         && incoming().phase in ['placement', 'movement']
+         && (incoming().winner == null
+             ? incoming().status == 'playing'
+             : (incoming().winner == myRole(existing()) && incoming().status == 'finished')))
         ||
-        // Action: Leave/Disconnect
-        (incoming().playerCount < existing().playerCount 
-         && incoming().diff(existing()).affectedKeys().hasOnly(['playerCount', 'players']))
+        // Forfeit: a member may only concede (the opponent wins).
+        (existing().status == 'playing'
+         && isMember(existing())
+         && incoming().diff(existing()).affectedKeys().hasOnly(['winner', 'forfeitBy', 'status', 'lastMoveAt'])
+         && incoming().status == 'finished'
+         && incoming().forfeitBy == request.auth.uid
+         && incoming().winner == opponentRole(existing()))
+        ||
+        // Leave: the guest removes themselves (the host deletes the lobby instead).
+        (existing().hostId != request.auth.uid
+         && isMember(existing())
+         && existing().playerCount == 2 && incoming().playerCount == 1
+         && incoming().diff(existing()).affectedKeys().hasOnly(['playerCount', 'players'])
+         && onlyMyPlayerEntryChanged()
+         && incoming().players.get(request.auth.uid, null) == null)
       );
 
       allow delete: if isVerified() && (
-        existing().hostId == request.auth.uid 
-        || existing().status == 'finished'
-        || existing().playerCount == 0
-        || (request.time > existing().createdAt + duration.value(10, 'm'))
+        existing().hostId == request.auth.uid
+        || (isMember(existing()) && existing().status in ['playing', 'finished'])
+        || (existing().status == 'waiting' && hostAbandoned(existing()))
       );
+
+      // Private-lobby PIN: readable only by the host. Written once, in the same
+      // batch that creates the lobby.
+      match /secrets/{docId} {
+        allow get: if isVerified() && get(lobbyPath(lobbyId)).data.hostId == request.auth.uid;
+        allow create: if isVerified() && docId == 'pin'
+          && getAfter(lobbyPath(lobbyId)).data.hostId == request.auth.uid
+          && getAfter(lobbyPath(lobbyId)).data.isPublic == false
+          && incoming().keys().hasOnly(['pin'])
+          && incoming().pin is string && incoming().pin.matches('^[0-9]{5}$');
+        allow delete: if isVerified() && get(lobbyPath(lobbyId)).data.hostId == request.auth.uid;
+      }
+
+      // Proof that the caller knows the PIN. Creation succeeds only with the
+      // correct PIN, so the PIN check is enforced by the server, not the client.
+      match /joinProofs/{proofUid} {
+        allow get: if isVerified() && proofUid == request.auth.uid;
+        allow create, update: if isVerified() && proofUid == request.auth.uid
+          && get(lobbyPath(lobbyId)).data.status == 'waiting'
+          && incoming().keys().hasOnly(['pin'])
+          && incoming().pin is string
+          && incoming().pin == get(/databases/$(database)/documents/lobbies/$(lobbyId)/secrets/pin).data.pin;
+        allow delete: if isVerified() && proofUid == request.auth.uid;
+      }
     }
 
-    // 2. Users Collection
+    // ---------- Users ----------
     match /users/{userId} {
-      allow get: if isVerified();
-      allow create, update: if isVerified() && request.auth.uid == userId 
+      allow get: if isVerified() && request.auth.uid == userId;
+      allow create, update: if isVerified() && request.auth.uid == userId
         && incoming().nickname is string && incoming().nickname.size() <= 50;
     }
   }
 }
-
