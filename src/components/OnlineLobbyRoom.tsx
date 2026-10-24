@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { doc, onSnapshot, updateDoc, deleteDoc } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, deleteDoc, getDoc, writeBatch } from 'firebase/firestore';
 import { db, auth, handleFirestoreError, OperationType } from '../lib/firebase';
 import { Language, TRANSLATIONS, LobbyData, GAME_VARIANTS } from '../types';
 import { 
@@ -25,6 +25,7 @@ export const OnlineLobbyRoom: React.FC<OnlineLobbyRoomProps> = ({
   const [lobby, setLobby] = useState<LobbyData | null>(null);
   const [isHost, setIsHost] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [hostPin, setHostPin] = useState<string | null>(null);
 
   useEffect(() => {
     if (!lobbyId) return;
@@ -72,6 +73,17 @@ export const OnlineLobbyRoom: React.FC<OnlineLobbyRoomProps> = ({
     }
   }, [lobby, lobbyId, onBack]);
 
+  // The PIN lives in a host-only sub-document; fetch it for the host to display/share.
+  useEffect(() => {
+    if (!lobby || !isHost || lobby.isPublic || hostPin !== null) return;
+    getDoc(doc(db, 'lobbies', lobbyId, 'secrets', 'pin'))
+      .then((snap) => {
+        const value = snap.exists() ? snap.data().pin : null;
+        if (typeof value === 'string') setHostPin(value);
+      })
+      .catch(() => {});
+  }, [lobby, isHost, lobbyId, hostPin]);
+
   const handleStart = async () => {
     if (!lobby || !isHost || lobby.playerCount < 2) return;
     
@@ -93,7 +105,12 @@ export const OnlineLobbyRoom: React.FC<OnlineLobbyRoomProps> = ({
     
     try {
       if (isHost) {
-        await deleteDoc(doc(db, 'lobbies', lobbyId));
+        const batch = writeBatch(db);
+        if (!lobby.isPublic) {
+          batch.delete(doc(db, 'lobbies', lobbyId, 'secrets', 'pin'));
+        }
+        batch.delete(doc(db, 'lobbies', lobbyId));
+        await batch.commit();
       } else {
         const user = auth.currentUser;
         if (user) {
@@ -109,9 +126,11 @@ export const OnlineLobbyRoom: React.FC<OnlineLobbyRoomProps> = ({
     }
   };
 
+  const pinValue = hostPin ?? lobby?.pin;
+
   const handleCopyPin = () => {
-    if (lobby?.pin) {
-      navigator.clipboard.writeText(lobby.pin);
+    if (pinValue) {
+      navigator.clipboard.writeText(pinValue);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -165,13 +184,13 @@ export const OnlineLobbyRoom: React.FC<OnlineLobbyRoomProps> = ({
               {lobby.isPublic ? t.public : t.private}
             </span>
 
-            {!lobby.isPublic && lobby.pin && (
+            {!lobby.isPublic && pinValue && (
               <button 
                 onClick={handleCopyPin}
                 className="inline-flex items-center gap-1.5 px-3 py-1 bg-tunisian-red/10 border border-tunisian-red/30 rounded-xl text-xs font-mono font-black text-tunisian-red hover:bg-tunisian-red/20 transition-all shadow-sm"
                 title="Click to copy PIN code"
               >
-                <Lock size={12} /> PIN: {lobby.pin}
+                <Lock size={12} /> PIN: {pinValue}
                 {copied ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
               </button>
             )}
@@ -234,9 +253,9 @@ export const OnlineLobbyRoom: React.FC<OnlineLobbyRoomProps> = ({
              <div className="flex flex-col items-center justify-center p-8 border-4 border-dashed border-tunisian-gold/30 rounded-2xl text-tunisian-dark-blue/40 bg-white/40">
                 <Hourglass size={36} className="animate-spin mb-3 text-tunisian-gold" />
                 <p className="text-base font-bold text-center">{t.waitingForPlayer}</p>
-                {!lobby.isPublic && lobby.pin && (
+                {!lobby.isPublic && pinValue && (
                   <p className="text-xs text-tunisian-dark-blue/60 mt-1 font-mono">
-                    Share PIN: <strong className="text-tunisian-red text-sm">{lobby.pin}</strong>
+                    Share PIN: <strong className="text-tunisian-red text-sm">{pinValue}</strong>
                   </p>
                 )}
              </div>
