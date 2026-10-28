@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  collection, query, where, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, getDocs
+  collection, query, where, onSnapshot, writeBatch, setDoc, updateDoc, deleteDoc, doc, serverTimestamp, getDocs
 } from 'firebase/firestore';
 import { db, auth, ensureAuth, handleFirestoreError, OperationType, loginWithGoogle, logoutUser } from '../lib/firebase';
 import { Language, TRANSLATIONS, LobbyData, GameMode, GAME_VARIANTS, GameVariantInfo } from '../types';
@@ -206,7 +206,6 @@ export const MultiplayerView: React.FC<MultiplayerViewProps> = ({
         mode: selectedMode,
         status: 'waiting',
         isPublic,
-        pin: isPublic ? null : pin,
         hostId: user.uid,
         hostName: cleanNick,
         playerCount: 1,
@@ -222,8 +221,16 @@ export const MultiplayerView: React.FC<MultiplayerViewProps> = ({
         createdAt: serverTimestamp(),
       };
 
-      const docRef = await addDoc(collection(db, 'lobbies'), newLobby);
-      onJoinLobby({ id: docRef.id, ...newLobby } as any);
+      // The PIN is stored in a host-only sub-document, never on the lobby itself,
+      // so that it cannot be read by other players listing the lobbies.
+      const lobbyRef = doc(collection(db, 'lobbies'));
+      const batch = writeBatch(db);
+      batch.set(lobbyRef, newLobby);
+      if (!isPublic) {
+        batch.set(doc(db, 'lobbies', lobbyRef.id, 'secrets', 'pin'), { pin });
+      }
+      await batch.commit();
+      onJoinLobby({ id: lobbyRef.id, ...newLobby } as any);
     } catch (err) {
       handleFirestoreError(err, OperationType.CREATE, 'lobbies');
     }
@@ -242,7 +249,7 @@ export const MultiplayerView: React.FC<MultiplayerViewProps> = ({
 
   const performJoin = async (lobby: LobbyData, inputPin?: string) => {
     setError('');
-    if (!lobby.isPublic && lobby.pin !== inputPin) {
+    if (!lobby.isPublic && !/^\d{5}$/.test(inputPin || '')) {
       setError(t.invalidPin);
       return;
     }
@@ -251,11 +258,27 @@ export const MultiplayerView: React.FC<MultiplayerViewProps> = ({
       const user = await ensureAuth();
       const lobbyRef = doc(db, 'lobbies', lobby.id);
       const cleanNick = nickname.trim() || 'Player';
-      
+
+      // Private lobby: the server (Firestore rules) verifies the PIN. This write is
+      // only accepted when the PIN matches the host's secret.
+      const proofRef = doc(db, 'lobbies', lobby.id, 'joinProofs', user.uid);
+      if (!lobby.isPublic) {
+        try {
+          await setDoc(proofRef, { pin: inputPin });
+        } catch {
+          setError(t.invalidPin);
+          return;
+        }
+      }
+
       await updateDoc(lobbyRef, {
         playerCount: 2,
         [`players.${user.uid}`]: { name: cleanNick, isHost: false, lastSeen: Date.now() }
       });
+
+      if (!lobby.isPublic) {
+        deleteDoc(proofRef).catch(() => {});
+      }
 
       onJoinLobby(lobby);
     } catch (err) {
